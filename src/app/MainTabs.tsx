@@ -1,4 +1,6 @@
 import React from "react";
+import { Ionicons } from "@expo/vector-icons";
+import { Image } from "react-native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import ServicesScreen from "../screens/ServicesScreen";
@@ -14,9 +16,11 @@ function ServicesStackNavigator() {
   return (
     <ServicesStack.Navigator>
       <ServicesStack.Screen
-        name="Services"
+        name="ServicesHome"
         component={ServicesScreen}
-        options={{ headerShown: false }}
+        options={{
+          headerShown: false,
+        }}
       />
       <ServicesStack.Screen
         name="ServiceDetail"
@@ -32,8 +36,31 @@ function BookingWrapper() {
 
 export default function MainTabs() {
   return (
-    <Tabs.Navigator>
-      <Tabs.Screen name="Services" component={ServicesStackNavigator} />
+    <Tabs.Navigator
+      screenOptions={({ route }) => ({
+        tabBarIcon: ({ color, size }) => {
+          let iconName: any = "";
+          if (route.name === "Services") iconName = "list";
+          else if (route.name === "Gallery") iconName = "images";
+          else if (route.name === "Booking") iconName = "calendar";
+          else if (route.name === "Profile") iconName = "person";
+          return <Ionicons name={iconName as any} size={size} color={color} />;
+        },
+      })}
+    >
+      <Tabs.Screen
+        name="Services"
+        component={ServicesStackNavigator}
+        options={{
+          title: "Services",
+          headerLeft: () => (
+            <Image
+              source={require("../assets/manasa_logo.png")}
+              style={{ width: 50, height: 50, marginRight: 10, marginLeft: 15 }}
+            />
+          ),
+        }}
+      />
       <Tabs.Screen
         name="Gallery"
         component={GalleryScreen}
