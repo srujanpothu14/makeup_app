@@ -1,11 +1,5 @@
 import React, { useState } from "react";
-import {
-  View,
-  Text,
-  TextInput,
-  StyleSheet,
-  TouchableOpacity,
-} from "react-native";
+import { View, TextInput, StyleSheet, TouchableOpacity } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useQuery } from "@tanstack/react-query";
 import { fetchServices } from "../mock/api";
@@ -21,7 +15,6 @@ export default function ServicesScreen() {
   });
   const [search, setSearch] = useState("");
 
-  // Optionally filter data by search
   const filteredData = (data ?? []).filter(
     (item: any) =>
       item.name?.toLowerCase().includes(search.toLowerCase()) ||
@@ -29,7 +22,8 @@ export default function ServicesScreen() {
   );
 
   return (
-    <View style={{ flex: 1, padding: 12 }}>
+    <View style={styles.container}>
+      {/* Search Bar */}
       <View style={styles.searchBarWrapper}>
         <View style={styles.searchContainer}>
           <Ionicons
@@ -57,24 +51,35 @@ export default function ServicesScreen() {
           )}
         </View>
       </View>
-      {isLoading ? null : (
+
+      {/* Services Grid */}
+      {!isLoading && (
         <FlashList
           data={filteredData}
+          numColumns={2} // ⭐ THIS IS THE MAIN FIX
+          keyExtractor={(item) => item.id}
+          contentContainerStyle={styles.list}
+          showsVerticalScrollIndicator={false}
           renderItem={({ item }) => (
             <ServiceCard
               service={item}
               onPress={() => nav.navigate("ServiceDetail", { id: item.id })}
             />
           )}
-          showsVerticalScrollIndicator={false}
         />
       )}
     </View>
   );
 }
-
 const styles = StyleSheet.create({
-  // title style already defined above, remove duplicate
+  container: {
+    flex: 1,
+    backgroundColor: "#fff",
+  },
+  list: {
+    paddingHorizontal: 8, // ❗ not padding on parent View
+    paddingBottom: 16,
+  },
   searchBarWrapper: {
     width: "100%",
     alignItems: "center",
@@ -97,6 +102,5 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     color: "#222",
     fontSize: 15,
-    backgroundColor: "transparent",
   },
 });

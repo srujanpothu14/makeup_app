@@ -41,6 +41,42 @@ export const seedServices: Service[] = [
     description: "Curls, braids, or sleek looks.",
     thumbnailUrl: "https://picsum.photos/seed/hair/400",
   },
+  {
+    id: "s5",
+    title: "Hair Styling",
+    category: "Hair",
+    durationMin: 45,
+    price: 1500,
+    description: "Curls, braids, or sleek looks.",
+    thumbnailUrl: "https://picsum.photos/seed/hair/400",
+  },
+  {
+    id: "s6",
+    title: "Hair Styling",
+    category: "Hair",
+    durationMin: 45,
+    price: 1500,
+    description: "Curls, braids, or sleek looks.",
+    thumbnailUrl: "https://picsum.photos/seed/hair/400",
+  },
+  {
+    id: "s7",
+    title: "Hair Styling",
+    category: "Hair",
+    durationMin: 45,
+    price: 1500,
+    description: "Curls, braids, or sleek looks.",
+    thumbnailUrl: "https://picsum.photos/seed/hair/400",
+  },
+  {
+    id: "s8",
+    title: "Hair Styling",
+    category: "Hair",
+    durationMin: 45,
+    price: 1500,
+    description: "Curls, braids, or sleek looks.",
+    thumbnailUrl: "https://picsum.photos/seed/hair/400",
+  },
 ];
 
 export const initialBookings: Booking[] = [];
