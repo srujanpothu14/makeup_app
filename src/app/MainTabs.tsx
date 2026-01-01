@@ -48,26 +48,36 @@ export default function MainTabs() {
         },
       })}
     >
-      <Tabs.Screen
-        name="Services"
-        component={ServicesStackNavigator}
-        options={{
-          title: "Services",
-          headerLeft: () => (
-            <Image
-              source={require("../assets/manasa_logo.png")}
-              style={{ width: 50, height: 50, marginRight: 10, marginLeft: 15 }}
-            />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="Gallery"
-        component={GalleryScreen}
-        options={{ title: "Gallery" }}
-      />
-      <Tabs.Screen name="Booking" component={BookingWrapper} />
-      <Tabs.Screen name="Profile" component={ProfileScreen} />
+      {[
+        { name: "Services", component: ServicesStackNavigator },
+        { name: "Gallery", component: GalleryScreen },
+        { name: "Booking", component: BookingWrapper },
+        { name: "Profile", component: ProfileScreen },
+      ].map(({ name, component }) => (
+        <Tabs.Screen
+          key={name}
+          name={name}
+          component={component}
+          options={{
+            title: name,
+            headerTitleStyle: {
+              fontSize: 30,
+              fontWeight: "bold",
+            },
+            headerLeft: () => (
+              <Image
+                source={require("../assets/manasa_logo.png")}
+                style={{
+                  width: 40,
+                  height: 40,
+                  marginLeft: 15,
+                  marginRight: 10,
+                }}
+              />
+            ),
+          }}
+        />
+      ))}
     </Tabs.Navigator>
   );
 }
