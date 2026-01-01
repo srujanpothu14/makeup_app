@@ -1,9 +1,16 @@
 import React from "react";
-import { View, Text, FlatList, Image, StyleSheet } from "react-native";
+import {
+  View,
+  Text,
+  FlatList,
+  Image,
+  StyleSheet,
+} from "react-native";
+import { Card } from "react-native-paper";
 
 const mockMedia = [
-  { id: "1", type: "image", uri: "https://via.placeholder.com/150" },
-  { id: "2", type: "image", uri: "https://via.placeholder.com/200" },
+  { id: "1", type: "image", uri: "https://picsum.photos/seed/hair/400" },
+  { id: "2", type: "image", uri: "https://picsum.photos/seed/hair/401" },
   {
     id: "3",
     type: "video",
@@ -13,17 +20,20 @@ const mockMedia = [
 
 export default function GalleryScreen() {
   const renderItem = ({ item }: { item: (typeof mockMedia)[0] }) => {
-    if (item.type === "image") {
-      return <Image source={{ uri: item.uri }} style={styles.media} />;
-    }
-    if (item.type === "video") {
-      return (
-        <View style={styles.media}>
-          <Text style={styles.videoPlaceholder}>Video Placeholder</Text>
+    return (
+      <Card style={styles.card}>
+        {/* CLIPPING CONTAINER (same pattern as ServiceCard) */}
+        <View style={styles.inner}>
+          {item.type === "image" ? (
+            <Image source={{ uri: item.uri }} style={styles.media} />
+          ) : (
+            <View style={[styles.media, styles.videoPlaceholder]}>
+              <Text style={styles.videoText}>Video</Text>
+            </View>
+          )}
         </View>
-      );
-    }
-    return null;
+      </Card>
+    );
   };
 
   return (
@@ -33,26 +43,51 @@ export default function GalleryScreen() {
         keyExtractor={(item) => item.id}
         renderItem={renderItem}
         numColumns={2}
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.list}
       />
     </View>
   );
 }
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 10,
     backgroundColor: "#fff",
   },
+
+  list: {
+    paddingHorizontal: 8,
+    paddingBottom: 16,
+  },
+
+  card: {
+    flex: 1,
+    margin: 8,
+    borderRadius: 16,
+    elevation: 4,
+    backgroundColor: "#fff",
+  },
+
+  inner: {
+    borderRadius: 16,
+    overflow: "hidden", // avoids shadow warning
+  },
+
+  /* Taller portrait-style media */
   media: {
-    width: "48%",
-    height: 150,
-    margin: "1%",
+    height: 180,        // same feel as ServiceCard image
+    width: "100%",
     backgroundColor: "#eee",
   },
+
   videoPlaceholder: {
-    textAlign: "center",
-    lineHeight: 150,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
+  videoText: {
     color: "#555",
+    fontSize: 16,
+    fontWeight: "600",
   },
 });
