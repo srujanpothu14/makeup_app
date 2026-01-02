@@ -9,6 +9,7 @@ import ServiceDetailScreen from "../screens/ServiceDetailScreen";
 import GalleryScreen from "../screens/GalleryScreen";
 import BookingScreen from "../screens/BookingScreen";
 import ProfileScreen from "../screens/ProfileScreen";
+import HomeScreen from "../screens/HomeScreen";
 
 const Tabs = createBottomTabNavigator();
 const ServicesStack = createNativeStackNavigator();
@@ -57,6 +58,7 @@ export default function MainTabs() {
         tabBarShowLabel: true,
         tabBarIcon: ({ color, size }) => {
           const icons: Record<string, any> = {
+            Home: "home-outline",
             Services: "list-outline",
             Gallery: "images-outline",
             Booking: "calendar-outline",
@@ -73,6 +75,11 @@ export default function MainTabs() {
         },
       })}
     >
+            <Tabs.Screen
+        name="Home"
+        component={HomeScreen}
+        options={tabOptions("Home")}
+      />
       <Tabs.Screen
         name="Services"
         component={ServicesStackNavigator}
