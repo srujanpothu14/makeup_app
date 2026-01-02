@@ -1,106 +1,131 @@
-import React, { useState } from "react";
-import { View, TextInput, StyleSheet, TouchableOpacity } from "react-native";
+import React, { useMemo, useState } from "react";
+import {
+  View,
+  TextInput,
+  StyleSheet,
+  TouchableOpacity,
+} from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useQuery } from "@tanstack/react-query";
-import { fetchServices } from "../mock/api";
 import { FlashList } from "@shopify/flash-list";
-import ServiceCard from "../components/ServiceCard";
 import { useNavigation } from "@react-navigation/native";
 
+import { fetchServices } from "../mock/api";
+import ServiceCard from "../components/ServiceCard";
+
 export default function ServicesScreen() {
-  const nav = useNavigation<any>();
-  const { data, isLoading } = useQuery({
+  const navigation = useNavigation<any>();
+  const [search, setSearch] = useState("");
+
+  const { data = [], isLoading } = useQuery({
     queryKey: ["services"],
     queryFn: fetchServices,
   });
-  const [search, setSearch] = useState("");
 
-  const filteredData = (data ?? []).filter(
-    (item: any) =>
-      item.name?.toLowerCase().includes(search.toLowerCase()) ||
-      item.description?.toLowerCase().includes(search.toLowerCase())
+  const filteredData = useMemo(() => {
+    if (!search.trim()) return data;
+    const q = search.toLowerCase();
+    return data.filter(
+      (item: any) =>
+        item.name?.toLowerCase().includes(q) ||
+        item.description?.toLowerCase().includes(q)
+    );
+  }, [data, search]);
+
+  const renderItem = ({ item }: { item: any }) => (
+    <ServiceCard
+      service={item}
+      onPress={() =>
+        navigation.navigate("ServiceDetail", { id: item.id })
+      }
+    />
   );
 
   return (
     <View style={styles.container}>
       {/* Search Bar */}
-      <View style={styles.searchBarWrapper}>
-        <View style={styles.searchContainer}>
-          <Ionicons
-            name="search"
-            size={20}
-            color="#888"
-            style={{ marginLeft: 15 }}
-          />
-          <TextInput
-            style={styles.searchInput}
-            placeholder="Search services"
-            value={search}
-            onChangeText={setSearch}
-            placeholderTextColor="#888"
-          />
-          {search.length > 0 && (
-            <TouchableOpacity onPress={() => setSearch("")}>
-              <Ionicons
-                name="close-circle"
-                size={18}
-                color="#888"
-                style={{ marginRight: 8 }}
-              />
-            </TouchableOpacity>
-          )}
-        </View>
+      <View style={styles.searchBar}>
+        <Ionicons name="search" size={20} color="#888" />
+
+        <TextInput
+          style={styles.searchInput}
+          placeholder="Search services"
+          value={search}
+          onChangeText={setSearch}
+          placeholderTextColor="#888"
+          clearButtonMode="while-editing"
+        />
+
+        {!!search && (
+          <TouchableOpacity onPress={() => setSearch("")}>
+            <Ionicons
+              name="close-circle"
+              size={18}
+              color="#888"
+            />
+          </TouchableOpacity>
+        )}
       </View>
 
       {/* Services Grid */}
       {!isLoading && (
         <FlashList
           data={filteredData}
-          numColumns={2} // ⭐ THIS IS THE MAIN FIX
-          keyExtractor={(item) => item.id}
-          contentContainerStyle={styles.list}
+          numColumns={2}
+          keyExtractor={(item: any) => item.id}
+          renderItem={renderItem}
           showsVerticalScrollIndicator={false}
-          renderItem={({ item }) => (
-            <ServiceCard
-              service={item}
-              onPress={() => nav.navigate("ServiceDetail", { id: item.id })}
-            />
-          )}
+          contentContainerStyle={styles.list}
         />
       )}
     </View>
   );
 }
+
+/* -------------------- STYLES -------------------- */
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#fff",
+    paddingTop: 12,
   },
+
   list: {
-    paddingHorizontal: 8, // ❗ not padding on parent View
+    paddingHorizontal: 8,
     paddingBottom: 16,
   },
-  searchBarWrapper: {
-    width: "100%",
-    alignItems: "center",
+
+  /* Search Bar */
+  searchBar: {
+    marginHorizontal: "5%",
+    maxWidth: 320,
+    alignSelf: "center",
     marginBottom: 12,
-  },
-  searchContainer: {
+
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#f0f0f0",
+    gap: 8,
+
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+
     borderRadius: 16,
-    paddingVertical: 8,
-    borderWidth: 1,
-    borderColor: "#ccc",
-    maxWidth: 320,
-    width: "90%",
+    backgroundColor: "#f9f9f9",
+
+    // Android shadow
+    elevation: 4,
+
+    // iOS shadow
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 6,
   },
+
   searchInput: {
     flex: 1,
-    height: 28,
-    paddingHorizontal: 8,
-    color: "#222",
     fontSize: 15,
+    color: "#222",
   },
 });
