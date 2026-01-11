@@ -13,25 +13,13 @@ import { FlashList } from "@shopify/flash-list";
 import { useNavigation } from "@react-navigation/native";
 import MapCard from "../components/MapsLocationCard";
 import ServiceCard from "../components/ServiceCard";
+import { seedServices } from "../mock/data";
 
 /* -------------------- DATA -------------------- */
 
-const featuredServices = [
-  {
-    id: "1",
-    title: "Bridal Makeup",
-    category: "Makeup",
-    durationMin: 120,
-    price: 8000,
-  },
-  {
-    id: "2",
-    title: "Hair Styling",
-    category: "Hair",
-    durationMin: 60,
-    price: 2500,
-  },
-];
+const featuredServices = seedServices.filter((s) =>
+  ["s1", "s2", "s3"].includes(s.id)
+);
 
 const ownerDetails = {
   name: "Manasa",
@@ -41,12 +29,6 @@ const ownerDetails = {
   instagram:
     "https://www.instagram.com/manasa_makeovers_korutla?igsh=enR0ZGI4MHl3a25l",
   whatsapp: "https://wa.me/919642166712?text=Hi",
-};
-
-const studioLocation = {
-  name: "Manasa Makeup Studio & Beauty Zone",
-  latitude: 18.8247202,
-  longitude: 78.7030454,
 };
 
 const feedbacks = [
@@ -91,7 +73,7 @@ export default function HomeScreen() {
     <View style={styles.cardWrapper}>
       <ServiceCard
         service={item}
-        onPress={() => navigation.navigate("ServiceDetail", { id: item.id })}
+        onPress={() => navigation.push("ServiceDetail", { id: item.id })}
       />
     </View>
   );

@@ -1,10 +1,5 @@
 import React, { useMemo, useState } from "react";
-import {
-  View,
-  TextInput,
-  StyleSheet,
-  TouchableOpacity,
-} from "react-native";
+import { View, TextInput, StyleSheet, TouchableOpacity } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useQuery } from "@tanstack/react-query";
 import { FlashList } from "@shopify/flash-list";
@@ -35,9 +30,7 @@ export default function ServicesScreen() {
   const renderItem = ({ item }: { item: any }) => (
     <ServiceCard
       service={item}
-      onPress={() =>
-        navigation.navigate("ServiceDetail", { id: item.id })
-      }
+      onPress={() => navigation.push("ServiceDetail", { id: item.id })}
     />
   );
 
@@ -58,11 +51,7 @@ export default function ServicesScreen() {
 
         {!!search && (
           <TouchableOpacity onPress={() => setSearch("")}>
-            <Ionicons
-              name="close-circle"
-              size={18}
-              color="#888"
-            />
+            <Ionicons name="close-circle" size={18} color="#888" />
           </TouchableOpacity>
         )}
       </View>

@@ -12,33 +12,6 @@ import ProfileScreen from "../screens/ProfileScreen";
 import HomeScreen from "../screens/HomeScreen";
 
 const Tabs = createBottomTabNavigator();
-const ServicesStack = createNativeStackNavigator();
-
-/* -------------------- SERVICES STACK -------------------- */
-
-function ServicesStackNavigator() {
-  return (
-    <ServicesStack.Navigator
-      screenOptions={{
-        headerTitleStyle: {
-          fontFamily: "RalewayBold", // ⭐ Raleway Bold for stack headers
-          fontSize: 26,
-        },
-      }}
-    >
-      <ServicesStack.Screen
-        name="ServicesHome"
-        component={ServicesScreen}
-        options={{ headerShown: false }}
-      />
-      <ServicesStack.Screen
-        name="ServiceDetail"
-        component={ServiceDetailScreen}
-        options={{ title: "Service Details" }}
-      />
-    </ServicesStack.Navigator>
-  );
-}
 
 /* -------------------- BOOKING WRAPPER -------------------- */
 
@@ -66,23 +39,19 @@ export default function MainTabs() {
           };
 
           return (
-            <Ionicons
-              name={icons[route.name]}
-              size={size}
-              color={color}
-            />
+            <Ionicons name={icons[route.name]} size={size} color={color} />
           );
         },
       })}
     >
-            <Tabs.Screen
+      <Tabs.Screen
         name="Home"
         component={HomeScreen}
         options={tabOptions("Home")}
       />
       <Tabs.Screen
         name="Services"
-        component={ServicesStackNavigator}
+        component={ServicesScreen}
         options={tabOptions("Services")}
       />
       <Tabs.Screen
@@ -113,10 +82,7 @@ const tabOptions = (title: string) => ({
     fontSize: 22,
   },
   headerLeft: () => (
-    <Image
-      source={require("../assets/manasa_logo.png")}
-      style={styles.logo}
-    />
+    <Image source={require("../assets/manasa_logo.png")} style={styles.logo} />
   ),
 });
 
