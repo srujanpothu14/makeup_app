@@ -48,6 +48,7 @@ const ServiceCard: React.FC<Props> = ({ service, onPress }) => {
               compact
               onPress={onPress}
               style={styles.button}
+              labelStyle={styles.buttonLabel}
             >
               Book
             </Button>
@@ -57,57 +58,69 @@ const ServiceCard: React.FC<Props> = ({ service, onPress }) => {
     </Card>
   );
 };
+
 const styles = StyleSheet.create({
   card: {
     flex: 1,
     margin: 8,
-    borderRadius: 16,
-    elevation: 4,
-    backgroundColor: "#fff",
+    borderRadius: 20,
+    backgroundColor: "#FFF0F5",
+    elevation: 6,
+    shadowColor: "#E91E63",
+    shadowOpacity: 0.15,
+    shadowRadius: 10,
   },
+
   inner: {
-    borderRadius: 16,
+    borderRadius: 20,
     overflow: "hidden",
   },
 
-  /* Taller image for vertical look */
+  /* Taller image */
   image: {
-    height: 180,          // ⬆️ taller than wide cards
+    height: 180,
   },
 
   content: {
-    paddingTop: 8,
-    paddingBottom: 12,
-    flexGrow: 1,          // ⬅️ allows footer to stick bottom
+    paddingTop: 10,
+    paddingBottom: 14,
+    backgroundColor: "#FFF0F5",
   },
 
   title: {
     fontWeight: "700",
-    fontSize: 14,
+    fontSize: 15,
+    color: "#B0004D",
     marginBottom: 2,
   },
+
   subtitle: {
     fontSize: 12,
-    color: "#777",
-    marginBottom: 8,
+    color: "#C96A8A",
+    marginBottom: 10,
   },
 
-  /* Bottom row */
   footer: {
-    marginTop: "auto",    // ⬅️ pushes to bottom
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
   },
 
   price: {
-    fontSize: 16,
-    fontWeight: "700",
+    fontSize: 17,
+    fontWeight: "800",
     color: "#E91E63",
   },
 
   button: {
-    borderRadius: 20,
+    borderRadius: 22,
+    backgroundColor: "#E91E63",
+  },
+
+  buttonLabel: {
+    fontSize: 12,
+    fontWeight: "700",
+    color: "#fff",
   },
 });
 

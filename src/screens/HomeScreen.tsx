@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {
   View,
   Text,
@@ -7,10 +7,13 @@ import {
   Linking,
   ScrollView,
   Platform,
+  Image,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { FlashList } from "@shopify/flash-list";
 import { useNavigation } from "@react-navigation/native";
+
 import MapCard from "../components/MapsLocationCard";
 import ServiceCard from "../components/ServiceCard";
 import { seedServices } from "../mock/data";
@@ -24,11 +27,13 @@ const featuredServices = seedServices.filter((s) =>
 const ownerDetails = {
   name: "Manasa",
   studio: "Manasa Beauty & Makeup Studio",
-  location: "Hyderabad, Telangana",
+  location: "Korutla, Telangana",
   phone: "+91 96421 66712",
   instagram:
     "https://www.instagram.com/manasa_makeovers_korutla?igsh=enR0ZGI4MHl3a25l",
   whatsapp: "https://wa.me/919642166712?text=Hi",
+  bio: "Certified professional makeup artist with 6+ years of experience in bridal, party, and fashion makeup. Known for elegant, long-lasting looks.",
+  photo: "https://picsum.photos/seed/owner/400",
 };
 
 const feedbacks = [
@@ -63,6 +68,29 @@ export default function HomeScreen() {
   const reviewRef = useRef<ScrollView>(null);
   const serviceRef = useRef<any>(null);
 
+  /* AUTO SLIDE REVIEWS */
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const next = (reviewIndex + 1) % feedbacks.length;
+      reviewRef.current?.scrollTo({ x: next * 220, animated: true });
+      setReviewIndex(next);
+    }, 3000);
+    return () => clearInterval(interval);
+  }, [reviewIndex]);
+
+  /* AUTO SLIDE SERVICES */
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const next = (serviceIndex + 1) % featuredServices.length;
+      serviceRef.current?.scrollToOffset({
+        offset: next * 180,
+        animated: true,
+      });
+      setServiceIndex(next);
+    }, 3500);
+    return () => clearInterval(interval);
+  }, [serviceIndex]);
+
   const renderService = ({ item }: { item: any }) => (
     <View style={styles.cardWrapper}>
       <ServiceCard
@@ -73,102 +101,154 @@ export default function HomeScreen() {
   );
 
   return (
-    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-      {/* HERO */}
-      <View style={styles.hero}>
-        <Text style={styles.heroTitle}>{ownerDetails.studio}</Text>
-        <Text style={styles.heroSubtitle}>
-          By {ownerDetails.name} – Professional Makeup Artist
-        </Text>
-      </View>
+    <SafeAreaView style={styles.safe}>
+      <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+        
+        {/* HERO */}
+        <View style={styles.hero}>
+          <Image
+            source={{ uri: ownerDetails.photo }}
+            style={{
+              width: 75,
+              height: 75,
+              borderRadius: 50,
+              marginBottom: 10,
+            }}
+          />
+          <Text style={styles.heroTitle}>{ownerDetails.studio}</Text>
+          <Text style={styles.heroSubtitle}>
+            By {ownerDetails.name} – Professional Makeup Artist
+          </Text>
+          <Text style={styles.heroLocation}>{ownerDetails.location}</Text>
 
-      {/* OWNER INFO */}
-      <View style={styles.infoCard}>
-        <TouchableOpacity onPress={openMaps} activeOpacity={0.9}>
-          <MapCard image={require("../assets/location.png")} />
-        </TouchableOpacity>
-
-        <TouchableOpacity onPress={() => Linking.openURL(`tel:${ownerDetails.phone}`)}>
-          <InfoRow icon="call-outline" text={ownerDetails.phone} />
-        </TouchableOpacity>
-
-        <TouchableOpacity onPress={() => Linking.openURL(ownerDetails.whatsapp)}>
-          <InfoRow icon="logo-whatsapp" text="Chat on WhatsApp" />
-        </TouchableOpacity>
-
-        <TouchableOpacity onPress={() => Linking.openURL(ownerDetails.instagram)}>
-          <InfoRow icon="logo-instagram" text="Instagram Profile" />
-        </TouchableOpacity>
-      </View>
-
-      {/* CUSTOMER REVIEWS */}
-      <View style={styles.sectionHeader}>
-        <Text style={styles.sectionTitle}>Customer Reviews</Text>
-      </View>
-
-      <ScrollView
-        ref={reviewRef}
-        horizontal
-        pagingEnabled
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.feedbackList}
-        onScroll={(e) => {
-          const index = Math.round(e.nativeEvent.contentOffset.x / 220);
-          setReviewIndex(index);
-        }}
-        scrollEventThrottle={16}
-      >
-        {feedbacks.map((f) => (
-          <View key={f.id} style={styles.feedbackCard}>
-            <Text style={styles.feedbackText}>"{f.text}"</Text>
-            <Text style={styles.feedbackName}>– {f.name}</Text>
+          <View style={styles.heroActions}>
+            <ActionButton
+              icon="call"
+              text="Call"
+              onPress={() => Linking.openURL(`tel:${ownerDetails.phone}`)}
+            />
+            <ActionButton
+              icon="logo-whatsapp"
+              text="WhatsApp"
+              onPress={() => Linking.openURL(ownerDetails.whatsapp)}
+            />
           </View>
-        ))}
-      </ScrollView>
+        </View>
 
-      {/* REVIEW DOTS */}
-      <View style={styles.dotsContainer}>
-        {feedbacks.map((_, i) => (
-          <View key={i} style={[styles.dot, i === reviewIndex && styles.activeDot]} />
-        ))}
-      </View>
+        {/* ABOUT OWNER */}
+        <SectionHeader title="About the Artist" />
+        <View style={styles.ownerCard}>
+          <Image source={{ uri: ownerDetails.photo }} style={styles.ownerImage} />
+          <View style={{ flex: 1 }}>
+            <Text style={styles.ownerName}>{ownerDetails.name}</Text>
+            <Text style={styles.ownerBio}>{ownerDetails.bio}</Text>
+          </View>
+        </View>
 
-      {/* FEATURED SERVICES */}
-      <View style={styles.sectionHeader}>
-        <Text style={styles.sectionTitle}>Featured Services</Text>
-        <TouchableOpacity onPress={() => navigation.navigate("Services")}>
-          <Text style={styles.seeAll}>See all</Text>
+        {/* LOCATION + CONTACT */}
+        <View style={styles.infoCard}>
+          <TouchableOpacity onPress={openMaps} activeOpacity={0.9}>
+            <MapCard image={require("../assets/location.png")} />
+          </TouchableOpacity>
+
+          <InfoRow icon="call-outline" text={ownerDetails.phone} />
+          <InfoRow icon="logo-whatsapp" text="Chat on WhatsApp" />
+          <InfoRow icon="logo-instagram" text="Instagram Profile" />
+        </View>
+
+        {/* FEATURED SERVICES */}
+        <View style={styles.sectionHeaderRow}>
+          <Text style={styles.sectionTitle}>Featured Services</Text>
+          <TouchableOpacity onPress={() => navigation.navigate("Services")}>
+            <Text style={styles.seeAll}>See all</Text>
+          </TouchableOpacity>
+        </View>
+
+        <FlashList
+          ref={serviceRef}
+          data={featuredServices}
+          renderItem={renderService}
+          keyExtractor={(item) => item.id}
+          horizontal
+          pagingEnabled
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.horizontalList}
+          onScroll={(e) => {
+            const index = Math.round(
+              e.nativeEvent.contentOffset.x / 180
+            );
+            setServiceIndex(index);
+          }}
+        />
+
+        <Dots count={featuredServices.length} active={serviceIndex} />
+
+        {/* REVIEWS */}
+        <SectionHeader title="Customer Reviews" />
+
+        <ScrollView
+          ref={reviewRef}
+          horizontal
+          pagingEnabled
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.feedbackList}
+          onScroll={(e) => {
+            const index = Math.round(e.nativeEvent.contentOffset.x / 220);
+            setReviewIndex(index);
+          }}
+          scrollEventThrottle={16}
+        >
+          {feedbacks.map((f) => (
+            <View key={f.id} style={styles.feedbackCard}>
+              <Text style={styles.feedbackText}>"{f.text}"</Text>
+              <Text style={styles.feedbackName}>– {f.name}</Text>
+            </View>
+          ))}
+        </ScrollView>
+
+        <Dots count={feedbacks.length} active={reviewIndex} />
+
+        {/* BOOKING CTA */}
+        <View style={styles.bookingCard}>
+          <Text style={styles.bookingTitle}>Ready to Glow?</Text>
+          <Text style={styles.bookingText}>
+            Book your beauty session with Manasa today.
+          </Text>
+          <TouchableOpacity
+            style={styles.bookingBtn}
+            onPress={() => navigation.navigate("Booking")}
+          >
+            <Text style={styles.bookingBtnText}>Book Now</Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* INSTAGRAM CTA */}
+        <TouchableOpacity
+          style={styles.instagramCard}
+          onPress={() => Linking.openURL(ownerDetails.instagram)}
+        >
+          <Ionicons name="logo-instagram" size={26} color="#E91E63" />
+          <Text style={styles.instagramText}>
+            Follow us on Instagram for latest looks
+          </Text>
         </TouchableOpacity>
-      </View>
-
-      <FlashList
-        ref={serviceRef}
-        data={featuredServices}
-        renderItem={renderService}
-        keyExtractor={(item) => item.id}
-        horizontal
-        pagingEnabled
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.horizontalList}
-        onScroll={(e) => {
-          const index = Math.round(e.nativeEvent.contentOffset.x / 180);
-          setServiceIndex(index);
-        }}
-      />
-
-      {/* SERVICE DOTS */}
-      <View style={styles.dotsContainer}>
-        {featuredServices.map((_, i) => (
-          <View key={i} style={[styles.dot, i === serviceIndex && styles.activeDot]} />
-        ))}
-      </View>
-    </ScrollView>
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
-/* -------------------- SMALL COMPONENT -------------------- */
+/* -------------------- COMPONENTS -------------------- */
 
-function InfoRow({ icon, text }: { icon: any; text: string }) {
+function ActionButton({ icon, text, onPress }: any) {
+  return (
+    <TouchableOpacity style={styles.actionBtn} onPress={onPress}>
+      <Ionicons name={icon} size={18} color="#fff" />
+      <Text style={styles.actionText}>{text}</Text>
+    </TouchableOpacity>
+  );
+}
+
+function InfoRow({ icon, text }: any) {
   return (
     <View style={styles.infoRow}>
       <Ionicons name={icon} size={20} color="#E91E63" />
@@ -177,17 +257,81 @@ function InfoRow({ icon, text }: { icon: any; text: string }) {
   );
 }
 
+function SectionHeader({ title }: any) {
+  return (
+    <View style={styles.sectionHeader}>
+      <Text style={styles.sectionTitle}>{title}</Text>
+    </View>
+  );
+}
+
+function Dots({ count, active }: any) {
+  return (
+    <View style={styles.dotsContainer}>
+      {Array.from({ length: count }).map((_, i) => (
+        <View
+          key={i}
+          style={[styles.dot, i === active && styles.activeDot]}
+        />
+      ))}
+    </View>
+  );
+}
+
 /* -------------------- STYLES -------------------- */
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#fff", paddingTop: 12 },
+  safe: { flex: 1, backgroundColor: "#fff" },
+  container: { flex: 1 },
 
-  hero: { paddingHorizontal: 20, marginBottom: 20 },
-  heroTitle: { fontSize: 26, fontFamily: "RalewayBold", marginBottom: 6 },
-  heroSubtitle: { fontSize: 15, color: "#777" },
+  hero: {
+    paddingHorizontal: 20,
+    paddingTop: 20,
+    paddingBottom: 24,
+    backgroundColor: "#FFF0F5",
+    borderBottomLeftRadius: 24,
+    borderBottomRightRadius: 24,
+  },
+
+  heroTitle: { fontSize: 26, fontFamily: "RalewayBold" },
+  heroSubtitle: { fontSize: 15, color: "#555", marginTop: 4 },
+  heroLocation: { fontSize: 13, color: "#888", marginTop: 4 },
+
+  heroActions: { flexDirection: "row", marginTop: 16, gap: 12 },
+
+  actionBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#E91E63",
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 20,
+    gap: 6,
+  },
+
+  actionText: { color: "#fff", fontSize: 13, fontWeight: "600" },
+
+  ownerCard: {
+    flexDirection: "row",
+    marginHorizontal: 16,
+    padding: 16,
+    borderRadius: 16,
+    backgroundColor: "#FFF0F5",
+    gap: 12,
+    alignItems: "center",
+  },
+
+  ownerImage: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+  },
+
+  ownerName: { fontSize: 18, fontFamily: "RalewayBold" },
+  ownerBio: { fontSize: 13, color: "#555", marginTop: 4 },
 
   infoCard: {
-    marginHorizontal: 16,
+    margin: 16,
     padding: 16,
     borderRadius: 16,
     backgroundColor: "#fff",
@@ -195,19 +339,18 @@ const styles = StyleSheet.create({
     shadowColor: "#000",
     shadowOpacity: 0.1,
     shadowRadius: 6,
-    marginBottom: 20,
   },
 
   infoRow: { flexDirection: "row", alignItems: "center", gap: 10, marginBottom: 12 },
   infoText: { fontSize: 14, color: "#333" },
 
-  sectionHeader: {
+  sectionHeader: { paddingHorizontal: 16, marginTop: 16, marginBottom: 8 },
+  sectionHeaderRow: {
+    paddingHorizontal: 16,
+    marginTop: 16,
+    marginBottom: 8,
     flexDirection: "row",
     justifyContent: "space-between",
-    alignItems: "center",
-    paddingHorizontal: 16,
-    marginBottom: 8,
-    marginTop: 12,
   },
 
   sectionTitle: { fontSize: 18, fontFamily: "RalewayBold" },
@@ -228,23 +371,42 @@ const styles = StyleSheet.create({
   horizontalList: { paddingLeft: 8, paddingRight: 16 },
   cardWrapper: { width: 180 },
 
-  /* DOTS */
-  dotsContainer: {
-    flexDirection: "row",
-    justifyContent: "center",
-    marginVertical: 10,
+  dotsContainer: { flexDirection: "row", justifyContent: "center", marginVertical: 10 },
+  dot: { width: 8, height: 8, borderRadius: 4, backgroundColor: "#ddd", marginHorizontal: 4 },
+  activeDot: { backgroundColor: "#E91E63", width: 18 },
+
+  bookingCard: {
+    margin: 16,
+    padding: 20,
+    borderRadius: 16,
+    backgroundColor: "#FFF0F5",
+    alignItems: "center",
   },
 
-  dot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: "#ddd",
-    marginHorizontal: 4,
-  },
+  bookingTitle: { fontSize: 20, fontFamily: "RalewayBold", marginBottom: 6 },
+  bookingText: { color: "#555", marginBottom: 12, textAlign: "center" },
 
-  activeDot: {
+  bookingBtn: {
     backgroundColor: "#E91E63",
-    width: 18,
+    paddingHorizontal: 24,
+    paddingVertical: 10,
+    borderRadius: 24,
   },
+
+  bookingBtnText: { color: "#fff", fontWeight: "600" },
+
+  instagramCard: {
+    marginHorizontal: 16,
+    marginBottom: 30,
+    padding: 16,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: "#FFE3EA",
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    justifyContent: "center",
+  },
+
+  instagramText: { color: "#E91E63", fontWeight: "600" },
 });
