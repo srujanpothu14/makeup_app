@@ -1,5 +1,5 @@
 import React from "react";
-import { Image, StyleSheet } from "react-native";
+import { Image, StyleSheet, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 
@@ -29,12 +29,11 @@ export default function MainTabs() {
 
         tabBarShowLabel: true,
 
-        // 🌸 Pink colors
         tabBarActiveTintColor: "#E91E63",
-        tabBarInactiveTintColor: "#ff73a2",
+        tabBarInactiveTintColor: "#F8A1C4",
 
         tabBarLabelStyle: {
-          fontSize: 12,
+          fontSize: 10,
           fontWeight: "400",
         },
 
@@ -51,36 +50,23 @@ export default function MainTabs() {
             ? icons[route.name].filled
             : icons[route.name].outline;
 
-          // ✅ TypeScript-safe cast
-          return <Ionicons name={iconName as any} size={size} color={color} />;
+          return (
+            <View style={[styles.iconWrapper, focused && styles.activeIconWrapper]}>
+              <Ionicons
+                name={iconName as any}
+                size={focused ? size +1: size}
+                color={color}
+              />
+            </View>
+          );
         },
       })}
     >
-      <Tabs.Screen
-        name="Home"
-        component={HomeScreen}
-        options={tabOptions("Home")}
-      />
-      <Tabs.Screen
-        name="Services"
-        component={ServicesScreen}
-        options={tabOptions("Services")}
-      />
-      <Tabs.Screen
-        name="Gallery"
-        component={GalleryScreen}
-        options={tabOptions("Gallery")}
-      />
-      <Tabs.Screen
-        name="Booking"
-        component={BookingWrapper}
-        options={tabOptions("Booking")}
-      />
-      <Tabs.Screen
-        name="Profile"
-        component={ProfileScreen}
-        options={tabOptions("Profile")}
-      />
+      <Tabs.Screen name="Home" component={HomeScreen} options={tabOptions("Home")} />
+      <Tabs.Screen name="Services" component={ServicesScreen} options={tabOptions("Services")} />
+      <Tabs.Screen name="Gallery" component={GalleryScreen} options={tabOptions("Gallery")} />
+      <Tabs.Screen name="Booking" component={BookingWrapper} options={tabOptions("Booking")} />
+      <Tabs.Screen name="Profile" component={ProfileScreen} options={tabOptions("Profile")} />
     </Tabs.Navigator>
   );
 }
@@ -119,5 +105,14 @@ const styles = StyleSheet.create({
     backgroundColor: "#FFE3EA",
     borderRadius: 25,
     padding: 4,
+  },
+
+  iconWrapper: {
+    padding: 4,
+    borderRadius: 12,
+  },
+
+  activeIconWrapper: {
+    backgroundColor: "#FFE3EA",
   },
 });
