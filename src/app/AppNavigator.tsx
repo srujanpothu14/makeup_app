@@ -5,6 +5,7 @@ import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import AuthStack from "./AuthStack";
 import MainTabs from "./MainTabs";
 import ServiceDetailScreen from "../screens/ServiceDetailScreen";
+import OfferDetailsScreen from "../screens/OfferDetailsScreen";
 
 import { useAuthStore } from "../store/useAuthStore";
 
@@ -33,6 +34,14 @@ export default function AppNavigator() {
               options={{
                 title: "Service Details", // or "" if you want no title
                 headerBackTitleVisible: false, // removes "MainTabs"
+              }}
+            />
+            <RootStack.Screen
+              name="OfferDetails"
+              component={OfferDetailsScreen}
+              options={{
+                title: "Offer Details",
+                headerBackTitleVisible: false,
               }}
             />
           </>

@@ -1,4 +1,10 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, {
+  useState,
+  useRef,
+  useEffect,
+  useCallback,
+  useMemo,
+} from "react";
 import {
   View,
   Text,
@@ -16,13 +22,13 @@ import { useNavigation } from "@react-navigation/native";
 
 import MapCard from "../components/MapsLocationCard";
 import ServiceCard from "../components/ServiceCard";
-import { seedServices } from "../mock/data";
+import OfferCard from "../components/OfferCard";
+import CarouselDots from "../components/CarouselDots";
+import HeroHeader from "../components/HeroHeader";
+import InfoRow from "../components/InfoRow";
+import { seedServices, offers } from "../mock/data";
 
 /* -------------------- DATA -------------------- */
-
-const featuredServices = seedServices.filter((s) =>
-  ["s1", "s2", "s3"].includes(s.id)
-);
 
 const ownerDetails = {
   name: "Manasa",
@@ -65,80 +71,127 @@ export default function HomeScreen() {
   const [reviewIndex, setReviewIndex] = useState(0);
   const [serviceIndex, setServiceIndex] = useState(0);
 
+  // Memoized lists to avoid re-computation on each render
+  const featuredServices = useMemo(
+    () => seedServices.filter((s) => ["s1", "s2", "s3"].includes(s.id)),
+    []
+  );
+  const memoOffers = useMemo(() => offers, [offers]);
+
   const reviewRef = useRef<ScrollView>(null);
   const serviceRef = useRef<any>(null);
 
   /* AUTO SLIDE REVIEWS */
   useEffect(() => {
+    if (!feedbacks.length) return;
     const interval = setInterval(() => {
-      const next = (reviewIndex + 1) % feedbacks.length;
-      reviewRef.current?.scrollTo({ x: next * 220, animated: true });
-      setReviewIndex(next);
+      setReviewIndex((prev) => {
+        const next = (prev + 1) % feedbacks.length;
+        reviewRef.current?.scrollTo({ x: next * 220, animated: true });
+        return next;
+      });
     }, 3000);
     return () => clearInterval(interval);
-  }, [reviewIndex]);
+  }, []);
+
+  const onReviewScroll = useCallback((e: any) => {
+    const index = Math.round(e.nativeEvent.contentOffset.x / 220);
+    setReviewIndex(index);
+  }, []);
 
   /* AUTO SLIDE SERVICES */
   useEffect(() => {
+    if (!featuredServices.length) return;
     const interval = setInterval(() => {
-      const next = (serviceIndex + 1) % featuredServices.length;
-      serviceRef.current?.scrollToOffset({
-        offset: next * 180,
-        animated: true,
+      setServiceIndex((prev) => {
+        const next = (prev + 1) % featuredServices.length;
+        serviceRef.current?.scrollToOffset({
+          offset: next * 180,
+          animated: true,
+        });
+        return next;
       });
-      setServiceIndex(next);
     }, 3500);
     return () => clearInterval(interval);
-  }, [serviceIndex]);
+  }, [featuredServices.length]);
 
-  const renderService = ({ item }: { item: any }) => (
-    <View style={styles.cardWrapper}>
-      <ServiceCard
-        service={item}
-        onPress={() => navigation.push("ServiceDetail", { id: item.id })}
-      />
-    </View>
+  const renderService = useCallback(
+    ({ item }: { item: any }) => (
+      <View style={styles.cardWrapper}>
+        <ServiceCard
+          service={item}
+          onPress={() => navigation.push("ServiceDetail", { id: item.id })}
+        />
+      </View>
+    ),
+    [navigation]
   );
+
+  const onServiceScroll = useCallback((e: any) => {
+    const index = Math.round(e.nativeEvent.contentOffset.x / 180);
+    setServiceIndex(index);
+  }, []);
 
   return (
     <SafeAreaView style={styles.safe}>
       <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-        
         {/* HERO */}
         <View style={styles.hero}>
-          <Image
-            source={{ uri: ownerDetails.photo }}
-            style={{
-              width: 75,
-              height: 75,
-              borderRadius: 50,
-              marginBottom: 10,
-            }}
+          <HeroHeader
+            logo={require("../assets/manasa_logo.png")}
+            studio={ownerDetails.studio}
+            location={ownerDetails.location}
           />
-          <Text style={styles.heroTitle}>{ownerDetails.studio}</Text>
-          <Text style={styles.heroSubtitle}>
-            By {ownerDetails.name} – Professional Makeup Artist
-          </Text>
-          <Text style={styles.heroLocation}>{ownerDetails.location}</Text>
-
-          <View style={styles.heroActions}>
-            <ActionButton
-              icon="call"
-              text="Call"
-              onPress={() => Linking.openURL(`tel:${ownerDetails.phone}`)}
-            />
-            <ActionButton
-              icon="logo-whatsapp"
-              text="WhatsApp"
-              onPress={() => Linking.openURL(ownerDetails.whatsapp)}
-            />
-          </View>
         </View>
+        {/* EXCLUSIVE OFFERS */}
+        {memoOffers && memoOffers.length > 0 && (
+          <>
+            <View style={styles.sectionHeaderRow}>
+              <Text style={styles.sectionTitle}>Exclusive Offers</Text>
+            </View>
+
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.offersList}
+            >
+              {memoOffers.map((o: any) => (
+                <OfferCard
+                  key={o.id}
+                  offer={o}
+                  onPress={() => navigation.push("OfferDetails", { id: o.id })}
+                />
+              ))}
+            </ScrollView>
+          </>
+        )}
+        {/* FEATURED SERVICES */}
+        <View style={styles.sectionHeaderRow}>
+          <Text style={styles.sectionTitle}>Featured Services</Text>
+          <TouchableOpacity onPress={() => navigation.navigate("Services")}>
+            <Text style={styles.seeAll}>View all</Text>
+          </TouchableOpacity>
+        </View>
+        <FlashList
+          ref={serviceRef}
+          data={featuredServices}
+          renderItem={renderService}
+          keyExtractor={(item) => item.id}
+          horizontal
+          pagingEnabled
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.horizontalList}
+          onScroll={onServiceScroll}
+        />
+        <CarouselDots count={featuredServices.length} active={serviceIndex} />
 
         {/* ABOUT OWNER */}
         <SectionHeader title="About the Artist" />
         <View style={styles.ownerCard}>
-          <Image source={{ uri: ownerDetails.photo }} style={styles.ownerImage} />
+          <Image
+            source={{ uri: ownerDetails.photo }}
+            style={styles.ownerImage}
+          />
           <View style={{ flex: 1 }}>
             <Text style={styles.ownerName}>{ownerDetails.name}</Text>
             <Text style={styles.ownerBio}>{ownerDetails.bio}</Text>
@@ -156,33 +209,6 @@ export default function HomeScreen() {
           <InfoRow icon="logo-instagram" text="Instagram Profile" />
         </View>
 
-        {/* FEATURED SERVICES */}
-        <View style={styles.sectionHeaderRow}>
-          <Text style={styles.sectionTitle}>Featured Services</Text>
-          <TouchableOpacity onPress={() => navigation.navigate("Services")}>
-            <Text style={styles.seeAll}>See all</Text>
-          </TouchableOpacity>
-        </View>
-
-        <FlashList
-          ref={serviceRef}
-          data={featuredServices}
-          renderItem={renderService}
-          keyExtractor={(item) => item.id}
-          horizontal
-          pagingEnabled
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.horizontalList}
-          onScroll={(e) => {
-            const index = Math.round(
-              e.nativeEvent.contentOffset.x / 180
-            );
-            setServiceIndex(index);
-          }}
-        />
-
-        <Dots count={featuredServices.length} active={serviceIndex} />
-
         {/* REVIEWS */}
         <SectionHeader title="Customer Reviews" />
 
@@ -192,10 +218,7 @@ export default function HomeScreen() {
           pagingEnabled
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={styles.feedbackList}
-          onScroll={(e) => {
-            const index = Math.round(e.nativeEvent.contentOffset.x / 220);
-            setReviewIndex(index);
-          }}
+          onScroll={onReviewScroll}
           scrollEventThrottle={16}
         >
           {feedbacks.map((f) => (
@@ -206,7 +229,7 @@ export default function HomeScreen() {
           ))}
         </ScrollView>
 
-        <Dots count={feedbacks.length} active={reviewIndex} />
+        <CarouselDots count={feedbacks.length} active={reviewIndex} />
 
         {/* BOOKING CTA */}
         <View style={styles.bookingCard}>
@@ -239,77 +262,30 @@ export default function HomeScreen() {
 
 /* -------------------- COMPONENTS -------------------- */
 
-function ActionButton({ icon, text, onPress }: any) {
-  return (
-    <TouchableOpacity style={styles.actionBtn} onPress={onPress}>
-      <Ionicons name={icon} size={18} color="#fff" />
-      <Text style={styles.actionText}>{text}</Text>
-    </TouchableOpacity>
-  );
-}
-
-function InfoRow({ icon, text }: any) {
-  return (
-    <View style={styles.infoRow}>
-      <Ionicons name={icon} size={20} color="#E91E63" />
-      <Text style={styles.infoText}>{text}</Text>
-    </View>
-  );
-}
-
-function SectionHeader({ title }: any) {
+const SectionHeader = React.memo(function SectionHeader({ title }: any) {
   return (
     <View style={styles.sectionHeader}>
       <Text style={styles.sectionTitle}>{title}</Text>
     </View>
   );
-}
-
-function Dots({ count, active }: any) {
-  return (
-    <View style={styles.dotsContainer}>
-      {Array.from({ length: count }).map((_, i) => (
-        <View
-          key={i}
-          style={[styles.dot, i === active && styles.activeDot]}
-        />
-      ))}
-    </View>
-  );
-}
+});
 
 /* -------------------- STYLES -------------------- */
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: "#fff" },
+  safe: { flex: 1, backgroundColor: "#FFF0F5" },
   container: { flex: 1 },
 
   hero: {
     paddingHorizontal: 20,
     paddingTop: 20,
-    paddingBottom: 24,
+    paddingBottom: 10,
     backgroundColor: "#FFF0F5",
     borderBottomLeftRadius: 24,
     borderBottomRightRadius: 24,
   },
 
-  heroTitle: { fontSize: 26, fontFamily: "RalewayBold" },
-  heroSubtitle: { fontSize: 15, color: "#555", marginTop: 4 },
-  heroLocation: { fontSize: 13, color: "#888", marginTop: 4 },
-
   heroActions: { flexDirection: "row", marginTop: 16, gap: 12 },
-
-  actionBtn: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#E91E63",
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderRadius: 20,
-    gap: 6,
-  },
-
-  actionText: { color: "#fff", fontSize: 13, fontWeight: "600" },
 
   ownerCard: {
     flexDirection: "row",
@@ -341,9 +317,6 @@ const styles = StyleSheet.create({
     shadowRadius: 6,
   },
 
-  infoRow: { flexDirection: "row", alignItems: "center", gap: 10, marginBottom: 12 },
-  infoText: { fontSize: 14, color: "#333" },
-
   sectionHeader: { paddingHorizontal: 16, marginTop: 16, marginBottom: 8 },
   sectionHeaderRow: {
     paddingHorizontal: 16,
@@ -368,12 +341,10 @@ const styles = StyleSheet.create({
   feedbackText: { fontSize: 14, color: "#444", marginBottom: 6 },
   feedbackName: { fontSize: 12, color: "#E91E63", fontWeight: "600" },
 
+  offersList: { paddingLeft: 16, paddingRight: 8, marginBottom: 8 },
+
   horizontalList: { paddingLeft: 8, paddingRight: 16 },
   cardWrapper: { width: 180 },
-
-  dotsContainer: { flexDirection: "row", justifyContent: "center", marginVertical: 10 },
-  dot: { width: 8, height: 8, borderRadius: 4, backgroundColor: "#ddd", marginHorizontal: 4 },
-  activeDot: { backgroundColor: "#E91E63", width: 18 },
 
   bookingCard: {
     margin: 16,

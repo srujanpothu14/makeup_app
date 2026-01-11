@@ -64,11 +64,11 @@ const styles = StyleSheet.create({
     flex: 1,
     margin: 8,
     borderRadius: 20,
-    backgroundColor: "#FFF0F5",
+    backgroundColor: "#ffffff",
     elevation: 6,
-    shadowColor: "#E91E63",
-    shadowOpacity: 0.15,
-    shadowRadius: 10,
+    shadowRadius: 6,
+    shadowOpacity: 0.5,
+    shadowColor: "#ecb3c6",
   },
 
   inner: {
@@ -84,7 +84,7 @@ const styles = StyleSheet.create({
   content: {
     paddingTop: 10,
     paddingBottom: 14,
-    backgroundColor: "#FFF0F5",
+    backgroundColor: "#ffffff",
   },
 
   title: {

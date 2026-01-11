@@ -79,4 +79,21 @@ export const seedServices: Service[] = [
   },
 ];
 
+export const offers = [
+  {
+    id: "o1",
+    title: "Bridal Bundle",
+    description: "15% off on Bridal Makeup + Hair",
+    serviceId: "s1",
+    discountPercent: 15,
+  },
+  {
+    id: "o2",
+    title: "Skincare Treat",
+    description: "20% off Hydra Facial",
+    serviceId: "s3",
+    discountPercent: 20,
+  },
+];
+
 export const initialBookings: Booking[] = [];

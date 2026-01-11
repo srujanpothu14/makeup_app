@@ -51,12 +51,10 @@ export default function MainTabs() {
             : icons[route.name].outline;
 
           return (
-            <View
-              style={[styles.iconWrapper, focused && styles.activeIconWrapper]}
-            >
+            <View style={[styles.iconWrapper, focused && styles.activeIconWrapper]}>
               <Ionicons
                 name={iconName as any}
-                size={focused ? size + 1 : size}
+                size={focused ? size +1: size}
                 color={color}
               />
             </View>
@@ -64,31 +62,11 @@ export default function MainTabs() {
         },
       })}
     >
-      <Tabs.Screen
-        name="Home"
-        component={HomeScreen}
-        options={{ headerShown: false }}
-      />
-      <Tabs.Screen
-        name="Services"
-        component={ServicesScreen}
-        options={tabOptions("Services")}
-      />
-      <Tabs.Screen
-        name="Gallery"
-        component={GalleryScreen}
-        options={tabOptions("Gallery")}
-      />
-      <Tabs.Screen
-        name="Booking"
-        component={BookingWrapper}
-        options={tabOptions("Booking")}
-      />
-      <Tabs.Screen
-        name="Profile"
-        component={ProfileScreen}
-        options={tabOptions("Profile")}
-      />
+      <Tabs.Screen name="Home" component={HomeScreen} options={{ headerShown: false }} />
+      <Tabs.Screen name="Services" component={ServicesScreen} options={tabOptions("Services")} />
+      <Tabs.Screen name="Gallery" component={GalleryScreen} options={tabOptions("Gallery")} />
+      <Tabs.Screen name="Booking" component={BookingWrapper} options={tabOptions("Booking")} />
+      <Tabs.Screen name="Profile" component={ProfileScreen} options={tabOptions("Profile")} />
     </Tabs.Navigator>
   );
 }
@@ -102,7 +80,10 @@ const tabOptions = (title: string) => ({
     fontSize: 22,
   },
   headerLeft: () => (
-    <Image source={require("../assets/manasa_logo.png")} style={styles.logo} />
+    <Image
+      source={require("../assets/manasa_logo.png")}
+      style={styles.logo}
+    />
   ),
 });
 
