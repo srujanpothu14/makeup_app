@@ -35,6 +35,7 @@ const styles = StyleSheet.create({
   card: {
     width: 260,
     padding: 14,
+marginTop: 10,
     marginRight: 12,
     borderRadius: 12,
     backgroundColor: "#fff",
@@ -43,7 +44,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.08,
     shadowRadius: 6,
   },
-  title: { fontSize: 16, fontFamily: "RalewayBold", marginBottom: 6 },
+  title: { fontSize: 16, fontFamily: "RalewayBold", marginBottom: 4 },
   desc: { fontSize: 13, color: "#555" },
   badge: {
     position: "absolute",

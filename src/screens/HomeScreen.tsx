@@ -73,7 +73,7 @@ export default function HomeScreen() {
 
   // Memoized lists to avoid re-computation on each render
   const featuredServices = useMemo(
-    () => seedServices.filter((s) => ["s1", "s2", "s3"].includes(s.id)),
+    () => seedServices.filter((s) => ["s1", "s2", "s3", "s4"].includes(s.id)),
     []
   );
   const memoOffers = useMemo(() => offers, [offers]);
@@ -106,7 +106,7 @@ export default function HomeScreen() {
       setServiceIndex((prev) => {
         const next = (prev + 1) % featuredServices.length;
         serviceRef.current?.scrollToOffset({
-          offset: next * 180,
+          offset: next * 200,
           animated: true,
         });
         return next;
@@ -281,8 +281,6 @@ const styles = StyleSheet.create({
     paddingTop: 20,
     paddingBottom: 10,
     backgroundColor: "#FFF0F5",
-    borderBottomLeftRadius: 24,
-    borderBottomRightRadius: 24,
   },
 
   heroActions: { flexDirection: "row", marginTop: 16, gap: 12 },
@@ -320,8 +318,8 @@ const styles = StyleSheet.create({
   sectionHeader: { paddingHorizontal: 16, marginTop: 16, marginBottom: 8 },
   sectionHeaderRow: {
     paddingHorizontal: 16,
-    marginTop: 16,
-    marginBottom: 8,
+    marginTop: 10,
+    marginBottom: 10,
     flexDirection: "row",
     justifyContent: "space-between",
   },
@@ -344,7 +342,7 @@ const styles = StyleSheet.create({
   offersList: { paddingLeft: 16, paddingRight: 8, marginBottom: 8 },
 
   horizontalList: { paddingLeft: 8, paddingRight: 16 },
-  cardWrapper: { width: 180 },
+  cardWrapper: { width: 200 },
 
   bookingCard: {
     margin: 16,
