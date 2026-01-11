@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useRef } from "react";
 import {
   View,
   Text,
@@ -32,21 +32,9 @@ const ownerDetails = {
 };
 
 const feedbacks = [
-  {
-    id: "f1",
-    name: "Aishwarya",
-    text: "Absolutely loved my bridal makeup! Highly professional.",
-  },
-  {
-    id: "f2",
-    name: "Sneha",
-    text: "Great service, very friendly and talented artist.",
-  },
-  {
-    id: "f3",
-    name: "Pooja",
-    text: "Best makeup studio in Hyderabad!",
-  },
+  { id: "f1", name: "Aishwarya", text: "Absolutely loved my bridal makeup!" },
+  { id: "f2", name: "Sneha", text: "Great service, very friendly artist." },
+  { id: "f3", name: "Pooja", text: "Best makeup studio in Hyderabad!" },
 ];
 
 /* -------------------- MAP FUNCTION -------------------- */
@@ -68,6 +56,12 @@ const openMaps = () => {
 
 export default function HomeScreen() {
   const navigation = useNavigation<any>();
+
+  const [reviewIndex, setReviewIndex] = useState(0);
+  const [serviceIndex, setServiceIndex] = useState(0);
+
+  const reviewRef = useRef<ScrollView>(null);
+  const serviceRef = useRef<any>(null);
 
   const renderService = ({ item }: { item: any }) => (
     <View style={styles.cardWrapper}>
@@ -94,34 +88,35 @@ export default function HomeScreen() {
           <MapCard image={require("../assets/location.png")} />
         </TouchableOpacity>
 
-        <TouchableOpacity
-          onPress={() => Linking.openURL(`tel:${ownerDetails.phone}`)}
-        >
+        <TouchableOpacity onPress={() => Linking.openURL(`tel:${ownerDetails.phone}`)}>
           <InfoRow icon="call-outline" text={ownerDetails.phone} />
         </TouchableOpacity>
 
-        <TouchableOpacity
-          onPress={() => Linking.openURL(ownerDetails.whatsapp)}
-        >
+        <TouchableOpacity onPress={() => Linking.openURL(ownerDetails.whatsapp)}>
           <InfoRow icon="logo-whatsapp" text="Chat on WhatsApp" />
         </TouchableOpacity>
 
-        <TouchableOpacity
-          onPress={() => Linking.openURL(ownerDetails.instagram)}
-        >
+        <TouchableOpacity onPress={() => Linking.openURL(ownerDetails.instagram)}>
           <InfoRow icon="logo-instagram" text="Instagram Profile" />
         </TouchableOpacity>
       </View>
 
-      {/* FEEDBACKS */}
+      {/* CUSTOMER REVIEWS */}
       <View style={styles.sectionHeader}>
         <Text style={styles.sectionTitle}>Customer Reviews</Text>
       </View>
 
       <ScrollView
+        ref={reviewRef}
         horizontal
+        pagingEnabled
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={styles.feedbackList}
+        onScroll={(e) => {
+          const index = Math.round(e.nativeEvent.contentOffset.x / 220);
+          setReviewIndex(index);
+        }}
+        scrollEventThrottle={16}
       >
         {feedbacks.map((f) => (
           <View key={f.id} style={styles.feedbackCard}>
@@ -130,6 +125,13 @@ export default function HomeScreen() {
           </View>
         ))}
       </ScrollView>
+
+      {/* REVIEW DOTS */}
+      <View style={styles.dotsContainer}>
+        {feedbacks.map((_, i) => (
+          <View key={i} style={[styles.dot, i === reviewIndex && styles.activeDot]} />
+        ))}
+      </View>
 
       {/* FEATURED SERVICES */}
       <View style={styles.sectionHeader}>
@@ -140,13 +142,26 @@ export default function HomeScreen() {
       </View>
 
       <FlashList
+        ref={serviceRef}
         data={featuredServices}
         renderItem={renderService}
         keyExtractor={(item) => item.id}
         horizontal
+        pagingEnabled
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={styles.horizontalList}
+        onScroll={(e) => {
+          const index = Math.round(e.nativeEvent.contentOffset.x / 180);
+          setServiceIndex(index);
+        }}
       />
+
+      {/* SERVICE DOTS */}
+      <View style={styles.dotsContainer}>
+        {featuredServices.map((_, i) => (
+          <View key={i} style={[styles.dot, i === serviceIndex && styles.activeDot]} />
+        ))}
+      </View>
     </ScrollView>
   );
 }
@@ -165,28 +180,12 @@ function InfoRow({ icon, text }: { icon: any; text: string }) {
 /* -------------------- STYLES -------------------- */
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#fff",
-    paddingTop: 12,
-  },
+  container: { flex: 1, backgroundColor: "#fff", paddingTop: 12 },
 
-  /* Hero */
-  hero: {
-    paddingHorizontal: 20,
-    marginBottom: 20,
-  },
-  heroTitle: {
-    fontSize: 26,
-    fontFamily: "RalewayBold",
-    marginBottom: 6,
-  },
-  heroSubtitle: {
-    fontSize: 15,
-    color: "#777",
-  },
+  hero: { paddingHorizontal: 20, marginBottom: 20 },
+  heroTitle: { fontSize: 26, fontFamily: "RalewayBold", marginBottom: 6 },
+  heroSubtitle: { fontSize: 15, color: "#777" },
 
-  /* Owner Info */
   infoCard: {
     marginHorizontal: 16,
     padding: 16,
@@ -194,24 +193,14 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     elevation: 4,
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 6,
     marginBottom: 20,
   },
 
-  infoRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 10,
-    marginBottom: 12,
-  },
-  infoText: {
-    fontSize: 14,
-    color: "#333",
-  },
+  infoRow: { flexDirection: "row", alignItems: "center", gap: 10, marginBottom: 12 },
+  infoText: { fontSize: 14, color: "#333" },
 
-  /* Section */
   sectionHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -220,20 +209,11 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     marginTop: 12,
   },
-  sectionTitle: {
-    fontSize: 18,
-    fontFamily: "RalewayBold",
-  },
-  seeAll: {
-    fontSize: 14,
-    color: "#E91E63",
-  },
 
-  /* Feedback */
-  feedbackList: {
-    paddingLeft: 16,
-    paddingRight: 8,
-  },
+  sectionTitle: { fontSize: 18, fontFamily: "RalewayBold" },
+  seeAll: { fontSize: 14, color: "#E91E63" },
+
+  feedbackList: { paddingLeft: 16, paddingRight: 8 },
   feedbackCard: {
     width: 220,
     padding: 14,
@@ -241,23 +221,30 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     backgroundColor: "#FFF0F5",
   },
-  feedbackText: {
-    fontSize: 14,
-    color: "#444",
-    marginBottom: 6,
-  },
-  feedbackName: {
-    fontSize: 12,
-    color: "#E91E63",
-    fontWeight: "600",
+
+  feedbackText: { fontSize: 14, color: "#444", marginBottom: 6 },
+  feedbackName: { fontSize: 12, color: "#E91E63", fontWeight: "600" },
+
+  horizontalList: { paddingLeft: 8, paddingRight: 16 },
+  cardWrapper: { width: 180 },
+
+  /* DOTS */
+  dotsContainer: {
+    flexDirection: "row",
+    justifyContent: "center",
+    marginVertical: 10,
   },
 
-  /* Services */
-  horizontalList: {
-    paddingLeft: 8,
-    paddingRight: 16,
+  dot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: "#ddd",
+    marginHorizontal: 4,
   },
-  cardWrapper: {
-    width: 180,
+
+  activeDot: {
+    backgroundColor: "#E91E63",
+    width: 18,
   },
 });
