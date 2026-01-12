@@ -133,8 +133,12 @@ export default function HomeScreen() {
   }, []);
 
   return (
-    <SafeAreaView style={styles.safe}>
-      <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+    <SafeAreaView style={styles.safe} edges={["top"]}>
+      <ScrollView
+        style={styles.container}
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: 12 }}
+      >
         {/* HERO */}
         <View style={styles.hero}>
           <HeroHeader
@@ -278,8 +282,7 @@ const styles = StyleSheet.create({
 
   hero: {
     paddingHorizontal: 20,
-    paddingTop: 20,
-    paddingBottom: 10,
+    paddingTop: 15,
     backgroundColor: "#FFF0F5",
   },
 
@@ -366,11 +369,9 @@ const styles = StyleSheet.create({
 
   instagramCard: {
     marginHorizontal: 16,
-    marginBottom: 30,
+    marginBottom: 12,
     padding: 16,
     borderRadius: 16,
-    borderWidth: 1,
-    borderColor: "#FFE3EA",
     flexDirection: "row",
     alignItems: "center",
     gap: 12,
