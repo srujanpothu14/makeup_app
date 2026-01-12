@@ -1,11 +1,13 @@
-import React from "react";
-import { TouchableOpacity, Text, StyleSheet } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
+import React from 'react';
+import { TouchableOpacity, Text, StyleSheet } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+
+import { colors } from '../theme';
 
 export default React.memo(function ActionButton({ icon, text, onPress }: any) {
   return (
     <TouchableOpacity style={styles.btn} onPress={onPress}>
-      <Ionicons name={icon} size={18} color="#fff" />
+      <Ionicons name={icon} size={18} color={colors.white} />
       <Text style={styles.text}>{text}</Text>
     </TouchableOpacity>
   );
@@ -13,13 +15,13 @@ export default React.memo(function ActionButton({ icon, text, onPress }: any) {
 
 const styles = StyleSheet.create({
   btn: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#E91E63",
+    alignItems: 'center',
+    backgroundColor: colors.primary,
+    borderRadius: 20,
+    flexDirection: 'row',
+    gap: 6,
     paddingHorizontal: 14,
     paddingVertical: 8,
-    borderRadius: 20,
-    gap: 6,
   },
-  text: { color: "#fff", fontSize: 13, fontWeight: "600" },
+  text: { color: colors.white, fontSize: 13, fontWeight: '600' },
 });

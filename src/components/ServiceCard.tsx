@@ -1,6 +1,8 @@
-import React from "react";
-import { View, StyleSheet } from "react-native";
-import { Card, Text, Button } from "react-native-paper";
+import React from 'react';
+import { View, StyleSheet } from 'react-native';
+import { Card, Text, Button } from 'react-native-paper';
+
+import { colors } from '../theme';
 
 type Service = {
   id: string;
@@ -24,7 +26,7 @@ const ServiceCard: React.FC<Props> = ({ service, onPress }) => {
         {/* IMAGE */}
         <Card.Cover
           source={{
-            uri: service.thumbnailUrl ?? "https://picsum.photos/300",
+            uri: service.thumbnailUrl ?? 'https://picsum.photos/300',
           }}
           style={styles.image}
         />
@@ -50,7 +52,7 @@ const ServiceCard: React.FC<Props> = ({ service, onPress }) => {
               style={styles.button}
               labelStyle={styles.buttonLabel}
             >
-              Book
+              <Text>Book</Text>
             </Button>
           </View>
         </Card.Content>
@@ -60,67 +62,54 @@ const ServiceCard: React.FC<Props> = ({ service, onPress }) => {
 };
 
 const styles = StyleSheet.create({
+  button: {
+    backgroundColor: colors.primary,
+    borderRadius: 22,
+  },
+  buttonLabel: {
+    color: colors.white,
+    fontSize: 12,
+    fontWeight: '700',
+  },
   card: {
+    backgroundColor: colors.white,
+    borderRadius: 20,
     flex: 1,
     margin: 8,
-    borderRadius: 20,
-    backgroundColor: "#ffffff",
-    elevation: 6,
-    shadowRadius: 6,
-    shadowOpacity: 0.5,
-    shadowColor: "#ecb3c6",
   },
-
-  inner: {
-    borderRadius: 20,
-    overflow: "hidden",
+  content: {
+    backgroundColor: colors.white,
+    paddingBottom: 14,
+    paddingTop: 10,
   },
-
+  footer: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
   /* Taller image */
   image: {
     height: 180,
   },
-
-  content: {
-    paddingTop: 10,
-    paddingBottom: 14,
-    backgroundColor: "#ffffff",
+  inner: {
+    borderRadius: 20,
+    overflow: 'hidden',
   },
-
-  title: {
-    fontWeight: "700",
-    fontSize: 15,
-    color: "#B0004D",
-    marginBottom: 2,
+  price: {
+    color: colors.primary,
+    fontSize: 17,
+    fontWeight: '800',
   },
-
   subtitle: {
+    color: colors.accent,
     fontSize: 12,
-    color: "#C96A8A",
     marginBottom: 10,
   },
-
-  footer: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-  },
-
-  price: {
-    fontSize: 17,
-    fontWeight: "800",
-    color: "#E91E63",
-  },
-
-  button: {
-    borderRadius: 22,
-    backgroundColor: "#E91E63",
-  },
-
-  buttonLabel: {
-    fontSize: 12,
-    fontWeight: "700",
-    color: "#fff",
+  title: {
+    color: colors.primary,
+    fontSize: 15,
+    fontWeight: '700',
+    marginBottom: 2,
   },
 });
 

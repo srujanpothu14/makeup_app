@@ -1,4 +1,4 @@
-import React from "react";
+import React from 'react';
 import {
   View,
   Image,
@@ -6,16 +6,23 @@ import {
   TouchableOpacity,
   Linking,
   Text,
-} from "react-native";
-import { Ionicons } from "@expo/vector-icons";
+  ImageSourcePropType,
+} from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+
+import { colors } from '../theme';
+
+/* -------------------- TYPES -------------------- */
 
 type Props = {
-  image: any;
+  image: ImageSourcePropType;
 };
+
+/* -------------------- COMPONENT -------------------- */
 
 export default function MapImageCard({ image }: Props) {
   const openMaps = () => {
-    Linking.openURL("https://maps.app.goo.gl/FCCi1bsaCp5yQNi77");
+    Linking.openURL('https://maps.app.goo.gl/FCCi1bsaCp5yQNi77');
   };
 
   return (
@@ -24,7 +31,7 @@ export default function MapImageCard({ image }: Props) {
         <Image source={image} style={styles.image} />
 
         <View style={styles.overlay}>
-          <Ionicons name="navigate-outline" size={20} color="#fff" />
+          <Ionicons name="navigate-outline" size={20} color={colors.white} />
           <Text style={styles.text}>Get Directions</Text>
         </View>
       </View>
@@ -32,38 +39,43 @@ export default function MapImageCard({ image }: Props) {
   );
 }
 
+/* -------------------- STYLES -------------------- */
+
 const styles = StyleSheet.create({
   card: {
-    marginHorizontal: 16,
+    backgroundColor: colors.white,
     borderRadius: 16,
-    overflow: "hidden",
-    backgroundColor: "#fff",
     elevation: 4,
-    shadowColor: "#000",
+    marginBottom: 20,
+    marginHorizontal: 16,
+    overflow: 'hidden',
+    shadowColor: colors.shadow,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 6,
-    marginBottom: 20,
   },
+
   image: {
-    width: "100%",
     height: 180,
+    width: '100%',
   },
+
   overlay: {
-    position: "absolute",
+    alignItems: 'center',
+    backgroundColor: colors.primary,
+    borderRadius: 20,
     bottom: 12,
-    right: 12,
-    backgroundColor: "#E91E63",
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
     gap: 6,
     paddingHorizontal: 12,
     paddingVertical: 6,
-    borderRadius: 20,
+    position: 'absolute',
+    right: 12,
   },
+
   text: {
-    color: "#fff",
+    color: colors.white,
     fontSize: 14,
-    fontWeight: "600",
+    fontWeight: '600',
   },
 });

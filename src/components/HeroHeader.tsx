@@ -1,15 +1,19 @@
-import React from "react";
-import { View, Image, Text, StyleSheet } from "react-native";
+import React from 'react';
+import { View, Image, Text, StyleSheet, ImageSourcePropType } from 'react-native';
 
-export default function HeroHeader({
-  logo,
-  studio,
-  location,
-}: {
-  logo: any;
+import { colors } from '../theme';
+
+/* -------------------- TYPES -------------------- */
+
+type Props = {
+  logo: ImageSourcePropType;
   studio: string;
   location?: string;
-}) {
+};
+
+/* -------------------- COMPONENT -------------------- */
+
+export default function HeroHeader({ logo, studio, location }: Props) {
   return (
     <View style={styles.row}>
       <Image source={logo} style={styles.logo} />
@@ -21,10 +25,30 @@ export default function HeroHeader({
   );
 }
 
+/* -------------------- STYLES -------------------- */
+
 const styles = StyleSheet.create({
-  row: { flexDirection: "row", alignItems: "center", gap: 12 },
-  logo: { width: 70, height: 70, resizeMode: "contain" },
-  textWrap: { flex: 1 },
-  title: { fontSize: 28, fontFamily: "RalewayBold" },
-  location: { fontSize: 13, color: "#888", marginTop: 4 },
+  location: {
+    color: colors.primary,
+    fontSize: 13,
+    marginTop: 4,
+  },
+  logo: {
+    height: 70,
+    resizeMode: 'contain',
+    width: 70,
+  },
+  row: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: 12,
+  },
+  textWrap: {
+    flex: 1,
+  },
+
+  title: {
+    fontFamily: 'RalewayBold',
+    fontSize: 28,
+  },
 });

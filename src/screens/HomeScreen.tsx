@@ -1,10 +1,4 @@
-import React, {
-  useState,
-  useRef,
-  useEffect,
-  useCallback,
-  useMemo,
-} from "react";
+import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import {
   View,
   Text,
@@ -14,38 +8,65 @@ import {
   ScrollView,
   Platform,
   Image,
-} from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { Ionicons } from "@expo/vector-icons";
-import { FlashList } from "@shopify/flash-list";
-import { useNavigation } from "@react-navigation/native";
+  NativeSyntheticEvent,
+  NativeScrollEvent,
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { Ionicons } from '@expo/vector-icons';
+import { FlashList } from '@shopify/flash-list';
+import { useNavigation, NavigationProp } from '@react-navigation/native';
 
-import MapCard from "../components/MapsLocationCard";
-import ServiceCard from "../components/ServiceCard";
-import OfferCard from "../components/OfferCard";
-import CarouselDots from "../components/CarouselDots";
-import HeroHeader from "../components/HeroHeader";
-import InfoRow from "../components/InfoRow";
-import { seedServices, offers } from "../mock/data";
+import MapCard from '../components/MapsLocationCard';
+import ServiceCard from '../components/ServiceCard';
+import OfferCard from '../components/OfferCard';
+import CarouselDots from '../components/CarouselDots';
+import HeroHeader from '../components/HeroHeader';
+import InfoRow from '../components/InfoRow';
+import { seedServices, offers } from '../mock/data';
+import { colors } from '../theme';
+import logo from '../assets/manasa_logo.png';
+import locationImg from '../assets/location.png';
+
+/* -------------------- TYPES -------------------- */
+
+type RootStackParamList = {
+  ServiceDetail: { id: string };
+  OfferDetails: { id: string };
+  Services: undefined;
+  Booking: undefined;
+};
+
+type Service = {
+  id: string;
+  title: string;
+  category: string;
+  durationMin: number;
+  price: number;
+  thumbnailUrl?: string;
+};
+
+type Offer = {
+  id: string;
+  title: string;
+};
 
 /* -------------------- DATA -------------------- */
 
 const ownerDetails = {
-  name: "Manasa",
-  studio: "Manasa Beauty & Makeup Studio",
-  location: "Korutla, Telangana",
-  phone: "+91 96421 66712",
-  instagram:
-    "https://www.instagram.com/manasa_makeovers_korutla?igsh=enR0ZGI4MHl3a25l",
-  whatsapp: "https://wa.me/919642166712?text=Hi",
-  bio: "Certified professional makeup artist with 6+ years of experience in bridal, party, and fashion makeup. Known for elegant, long-lasting looks.",
-  photo: "https://picsum.photos/seed/owner/400",
+  name: 'Manasa',
+  studio: 'Manasa Beauty & Makeup Studio',
+  location: 'Korutla, Telangana',
+  phone: '+91 96421 66712',
+  instagram: 'https://www.instagram.com/manasa_makeovers_korutla?igsh=enR0ZGI4MHl3a25l',
+  whatsapp: 'https://wa.me/919642166712?text=Hi',
+  bio: 'Certified professional makeup artist with 6+ years of experience in bridal, party, and fashion makeup. Known for elegant, long-lasting looks.',
+  photo: 'https://picsum.photos/seed/owner/400',
 };
 
 const feedbacks = [
-  { id: "f1", name: "Aishwarya", text: "Absolutely loved my bridal makeup!" },
-  { id: "f2", name: "Sneha", text: "Great service, very friendly artist." },
-  { id: "f3", name: "Pooja", text: "Best makeup studio in Hyderabad!" },
+  { id: 'f1', name: 'Aishwarya', text: 'Absolutely loved my bridal makeup!' },
+  { id: 'f2', name: 'Sneha', text: 'Great service, very friendly artist.' },
+  { id: 'f3', name: 'Pooja', text: 'Best makeup studio in Hyderabad!' },
 ];
 
 /* -------------------- MAP FUNCTION -------------------- */
@@ -53,10 +74,10 @@ const feedbacks = [
 const openMaps = () => {
   const latitude = 18.8247202;
   const longitude = 78.7030454;
-  const name = "Manasa Makeup Studio & Beauty Zone";
+  const name = 'Manasa Makeup Studio & Beauty Zone';
 
   const url =
-    Platform.OS === "ios"
+    Platform.OS === 'ios'
       ? `maps:0,0?q=${name}@${latitude},${longitude}`
       : `geo:0,0?q=${latitude},${longitude}(${name})`;
 
@@ -66,26 +87,26 @@ const openMaps = () => {
 /* -------------------- SCREEN -------------------- */
 
 export default function HomeScreen() {
-  const navigation = useNavigation<any>();
+  const navigation = useNavigation<NavigationProp<RootStackParamList>>();
 
   const [reviewIndex, setReviewIndex] = useState(0);
   const [serviceIndex, setServiceIndex] = useState(0);
 
-  // Memoized lists to avoid re-computation on each render
-  const featuredServices = useMemo(
-    () => seedServices.filter((s) => ["s1", "s2", "s3", "s4"].includes(s.id)),
-    []
+  const featuredServices = useMemo<Service[]>(
+    () => seedServices.filter(s => ['s1', 's2', 's3', 's4'].includes(s.id)),
+    [],
   );
-  const memoOffers = useMemo(() => offers, [offers]);
+
+  const memoOffers = useMemo<Offer[]>(() => offers, []);
 
   const reviewRef = useRef<ScrollView>(null);
-  const serviceRef = useRef<any>(null);
+  const serviceRef = useRef<FlashList<Service>>(null);
 
   /* AUTO SLIDE REVIEWS */
   useEffect(() => {
     if (!feedbacks.length) return;
     const interval = setInterval(() => {
-      setReviewIndex((prev) => {
+      setReviewIndex(prev => {
         const next = (prev + 1) % feedbacks.length;
         reviewRef.current?.scrollTo({ x: next * 220, animated: true });
         return next;
@@ -94,7 +115,7 @@ export default function HomeScreen() {
     return () => clearInterval(interval);
   }, []);
 
-  const onReviewScroll = useCallback((e: any) => {
+  const onReviewScroll = useCallback((e: NativeSyntheticEvent<NativeScrollEvent>) => {
     const index = Math.round(e.nativeEvent.contentOffset.x / 220);
     setReviewIndex(index);
   }, []);
@@ -103,7 +124,7 @@ export default function HomeScreen() {
   useEffect(() => {
     if (!featuredServices.length) return;
     const interval = setInterval(() => {
-      setServiceIndex((prev) => {
+      setServiceIndex(prev => {
         const next = (prev + 1) % featuredServices.length;
         serviceRef.current?.scrollToOffset({
           offset: next * 200,
@@ -116,39 +137,36 @@ export default function HomeScreen() {
   }, [featuredServices.length]);
 
   const renderService = useCallback(
-    ({ item }: { item: any }) => (
+    ({ item }: { item: Service }) => (
       <View style={styles.cardWrapper}>
         <ServiceCard
           service={item}
-          onPress={() => navigation.push("ServiceDetail", { id: item.id })}
+          onPress={() => navigation.push('ServiceDetail', { id: item.id })}
         />
       </View>
     ),
-    [navigation]
+    [navigation],
   );
 
-  const onServiceScroll = useCallback((e: any) => {
+  const onServiceScroll = useCallback((e: NativeSyntheticEvent<NativeScrollEvent>) => {
     const index = Math.round(e.nativeEvent.contentOffset.x / 180);
     setServiceIndex(index);
   }, []);
 
   return (
-    <SafeAreaView style={styles.safe} edges={["top"]}>
+    <SafeAreaView style={styles.safe} edges={['top']}>
       <ScrollView
         style={styles.container}
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 12 }}
+        contentContainerStyle={styles.scrollContent}
       >
         {/* HERO */}
         <View style={styles.hero}>
-          <HeroHeader
-            logo={require("../assets/manasa_logo.png")}
-            studio={ownerDetails.studio}
-            location={ownerDetails.location}
-          />
+          <HeroHeader logo={logo} studio={ownerDetails.studio} location={ownerDetails.location} />
         </View>
-        {/* EXCLUSIVE OFFERS */}
-        {memoOffers && memoOffers.length > 0 && (
+
+        {/* OFFERS */}
+        {memoOffers.length > 0 && (
           <>
             <View style={styles.sectionHeaderRow}>
               <Text style={styles.sectionTitle}>Exclusive Offers</Text>
@@ -159,53 +177,53 @@ export default function HomeScreen() {
               showsHorizontalScrollIndicator={false}
               contentContainerStyle={styles.offersList}
             >
-              {memoOffers.map((o: any) => (
+              {memoOffers.map(o => (
                 <OfferCard
                   key={o.id}
                   offer={o}
-                  onPress={() => navigation.push("OfferDetails", { id: o.id })}
+                  onPress={() => navigation.push('OfferDetails', { id: o.id })}
                 />
               ))}
             </ScrollView>
           </>
         )}
+
         {/* FEATURED SERVICES */}
         <View style={styles.sectionHeaderRow}>
           <Text style={styles.sectionTitle}>Featured Services</Text>
-          <TouchableOpacity onPress={() => navigation.navigate("Services")}>
+          <TouchableOpacity onPress={() => navigation.navigate('Services')}>
             <Text style={styles.seeAll}>View all</Text>
           </TouchableOpacity>
         </View>
+
         <FlashList
           ref={serviceRef}
           data={featuredServices}
           renderItem={renderService}
-          keyExtractor={(item) => item.id}
+          keyExtractor={item => item.id}
           horizontal
           pagingEnabled
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={styles.horizontalList}
           onScroll={onServiceScroll}
         />
+
         <CarouselDots count={featuredServices.length} active={serviceIndex} />
 
         {/* ABOUT OWNER */}
         <SectionHeader title="About the Artist" />
         <View style={styles.ownerCard}>
-          <Image
-            source={{ uri: ownerDetails.photo }}
-            style={styles.ownerImage}
-          />
-          <View style={{ flex: 1 }}>
+          <Image source={{ uri: ownerDetails.photo }} style={styles.ownerImage} />
+          <View style={styles.ownerTextWrap}>
             <Text style={styles.ownerName}>{ownerDetails.name}</Text>
             <Text style={styles.ownerBio}>{ownerDetails.bio}</Text>
           </View>
         </View>
 
-        {/* LOCATION + CONTACT */}
+        {/* LOCATION */}
         <View style={styles.infoCard}>
           <TouchableOpacity onPress={openMaps} activeOpacity={0.9}>
-            <MapCard image={require("../assets/location.png")} />
+            <MapCard image={locationImg} />
           </TouchableOpacity>
 
           <InfoRow icon="call-outline" text={ownerDetails.phone} />
@@ -225,9 +243,9 @@ export default function HomeScreen() {
           onScroll={onReviewScroll}
           scrollEventThrottle={16}
         >
-          {feedbacks.map((f) => (
+          {feedbacks.map(f => (
             <View key={f.id} style={styles.feedbackCard}>
-              <Text style={styles.feedbackText}>"{f.text}"</Text>
+              <Text style={styles.feedbackText}>{f.text}</Text>
               <Text style={styles.feedbackName}>– {f.name}</Text>
             </View>
           ))}
@@ -238,12 +256,10 @@ export default function HomeScreen() {
         {/* BOOKING CTA */}
         <View style={styles.bookingCard}>
           <Text style={styles.bookingTitle}>Ready to Glow?</Text>
-          <Text style={styles.bookingText}>
-            Book your beauty session with Manasa today.
-          </Text>
+          <Text style={styles.bookingText}>Book your beauty session with Manasa today.</Text>
           <TouchableOpacity
             style={styles.bookingBtn}
-            onPress={() => navigation.navigate("Booking")}
+            onPress={() => navigation.navigate('Booking')}
           >
             <Text style={styles.bookingBtnText}>Book Now</Text>
           </TouchableOpacity>
@@ -254,129 +270,112 @@ export default function HomeScreen() {
           style={styles.instagramCard}
           onPress={() => Linking.openURL(ownerDetails.instagram)}
         >
-          <Ionicons name="logo-instagram" size={26} color="#E91E63" />
-          <Text style={styles.instagramText}>
-            Follow us on Instagram for latest looks
-          </Text>
+          <Ionicons name="logo-instagram" size={26} color={colors.primary} />
+          <Text style={styles.instagramText}>Follow us on Instagram for latest looks</Text>
         </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>
   );
 }
 
-/* -------------------- COMPONENTS -------------------- */
+const SectionHeader = React.memo(({ title }: { title: string }) => (
+  <View style={styles.sectionHeader}>
+    <Text style={styles.sectionTitle}>{title}</Text>
+  </View>
+));
 
-const SectionHeader = React.memo(function SectionHeader({ title }: any) {
-  return (
-    <View style={styles.sectionHeader}>
-      <Text style={styles.sectionTitle}>{title}</Text>
-    </View>
-  );
-});
+SectionHeader.displayName = 'SectionHeader';
 
 /* -------------------- STYLES -------------------- */
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: "#FFF0F5" },
-  container: { flex: 1 },
-
-  hero: {
-    paddingHorizontal: 20,
-    paddingTop: 15,
-    backgroundColor: "#FFF0F5",
+  bookingBtn: {
+    backgroundColor: colors.primary,
+    borderRadius: 24,
+    paddingHorizontal: 24,
+    paddingVertical: 10,
   },
-
-  heroActions: { flexDirection: "row", marginTop: 16, gap: 12 },
-
-  ownerCard: {
-    flexDirection: "row",
-    marginHorizontal: 16,
-    padding: 16,
+  bookingBtnText: { color: colors.white, fontWeight: '600' },
+  bookingCard: {
+    alignItems: 'center',
+    backgroundColor: colors.backgroundSoft,
     borderRadius: 16,
-    backgroundColor: "#FFF0F5",
-    gap: 12,
-    alignItems: "center",
+    margin: 16,
+    padding: 20,
   },
 
-  ownerImage: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
+  bookingText: { color: colors.text, marginBottom: 12, textAlign: 'center' },
+
+  bookingTitle: { fontFamily: 'RalewayBold', fontSize: 20, marginBottom: 6 },
+
+  cardWrapper: { width: 200 },
+
+  container: { backgroundColor: colors.backgroundSoft, flex: 1 },
+  feedbackCard: {
+    backgroundColor: colors.backgroundSoft,
+    borderRadius: 14,
+    marginRight: 12,
+    padding: 14,
+    width: 220,
   },
 
-  ownerName: { fontSize: 18, fontFamily: "RalewayBold" },
-  ownerBio: { fontSize: 13, color: "#555", marginTop: 4 },
+  feedbackList: { paddingLeft: 16, paddingRight: 8 },
+  feedbackName: { color: colors.primary, fontSize: 12, fontWeight: '600' },
 
+  feedbackText: { color: colors.subdued, fontSize: 14, marginBottom: 6 },
+
+  hero: { backgroundColor: colors.backgroundSoft, paddingHorizontal: 20, paddingTop: 15 },
+
+  horizontalList: { paddingLeft: 8, paddingRight: 16 },
   infoCard: {
+    backgroundColor: colors.white,
+    borderRadius: 16,
+    elevation: 4,
     margin: 16,
     padding: 16,
-    borderRadius: 16,
-    backgroundColor: "#fff",
-    elevation: 4,
-    shadowColor: "#000",
+    shadowColor: colors.shadow,
     shadowOpacity: 0.1,
     shadowRadius: 6,
   },
-
-  sectionHeader: { paddingHorizontal: 16, marginTop: 16, marginBottom: 8 },
-  sectionHeaderRow: {
-    paddingHorizontal: 16,
-    marginTop: 10,
-    marginBottom: 10,
-    flexDirection: "row",
-    justifyContent: "space-between",
-  },
-
-  sectionTitle: { fontSize: 18, fontFamily: "RalewayBold" },
-  seeAll: { fontSize: 14, color: "#E91E63" },
-
-  feedbackList: { paddingLeft: 16, paddingRight: 8 },
-  feedbackCard: {
-    width: 220,
-    padding: 14,
-    marginRight: 12,
-    borderRadius: 14,
-    backgroundColor: "#FFF0F5",
-  },
-
-  feedbackText: { fontSize: 14, color: "#444", marginBottom: 6 },
-  feedbackName: { fontSize: 12, color: "#E91E63", fontWeight: "600" },
-
-  offersList: { paddingLeft: 16, paddingRight: 8, marginBottom: 8 },
-
-  horizontalList: { paddingLeft: 8, paddingRight: 16 },
-  cardWrapper: { width: 200 },
-
-  bookingCard: {
-    margin: 16,
-    padding: 20,
-    borderRadius: 16,
-    backgroundColor: "#FFF0F5",
-    alignItems: "center",
-  },
-
-  bookingTitle: { fontSize: 20, fontFamily: "RalewayBold", marginBottom: 6 },
-  bookingText: { color: "#555", marginBottom: 12, textAlign: "center" },
-
-  bookingBtn: {
-    backgroundColor: "#E91E63",
-    paddingHorizontal: 24,
-    paddingVertical: 10,
-    borderRadius: 24,
-  },
-
-  bookingBtnText: { color: "#fff", fontWeight: "600" },
-
   instagramCard: {
-    marginHorizontal: 16,
-    marginBottom: 12,
-    padding: 16,
+    alignItems: 'center',
     borderRadius: 16,
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
     gap: 12,
-    justifyContent: "center",
+    justifyContent: 'center',
+    marginBottom: 12,
+    marginHorizontal: 16,
+    padding: 16,
+  },
+  instagramText: { color: colors.primary, fontWeight: '600' },
+
+  offersList: { marginBottom: 8, paddingLeft: 16, paddingRight: 8 },
+
+  ownerBio: { color: colors.text, fontSize: 13, marginTop: 4 },
+  ownerCard: {
+    alignItems: 'center',
+    backgroundColor: colors.backgroundSoft,
+    borderRadius: 16,
+    flexDirection: 'row',
+    gap: 12,
+    marginHorizontal: 16,
+    padding: 16,
+  },
+  ownerImage: { borderRadius: 40, height: 80, width: 80 },
+  ownerName: { fontFamily: 'RalewayBold', fontSize: 18 },
+
+  ownerTextWrap: { flex: 1 },
+  safe: { backgroundColor: colors.white, flex: 1 },
+  scrollContent: { paddingBottom: 12 },
+  sectionHeader: { marginBottom: 8, marginTop: 16, paddingHorizontal: 16 },
+  sectionHeaderRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 10,
+    marginTop: 10,
+    paddingHorizontal: 16,
   },
 
-  instagramText: { color: "#E91E63", fontWeight: "600" },
+  sectionTitle: { fontFamily: 'RalewayBold', fontSize: 18 },
+  seeAll: { color: colors.primary, fontSize: 14 },
 });

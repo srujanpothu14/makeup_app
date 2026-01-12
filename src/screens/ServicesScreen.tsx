@@ -1,57 +1,77 @@
-import React, { useMemo, useState } from "react";
-import { View, TextInput, StyleSheet, TouchableOpacity } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
-import { useQuery } from "@tanstack/react-query";
-import { FlashList } from "@shopify/flash-list";
-import { useNavigation } from "@react-navigation/native";
+import React, { useMemo, useState, useCallback } from 'react';
+import { View, TextInput, StyleSheet, TouchableOpacity } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { useQuery } from '@tanstack/react-query';
+import { FlashList } from '@shopify/flash-list';
+import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
-import { fetchServices } from "../mock/api";
-import ServiceCard from "../components/ServiceCard";
+import { fetchServices } from '../mock/api';
+import ServiceCard from '../components/ServiceCard';
+import { colors } from '../theme';
+
+/* -------------------- TYPES -------------------- */
+
+type Service = {
+  id: string;
+  title: string;
+  description?: string;
+};
+
+type RootStackParamList = {
+  ServiceDetail: { id: string };
+};
+
+type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'ServiceDetail'>;
+
+/* -------------------- SCREEN -------------------- */
 
 export default function ServicesScreen() {
-  const navigation = useNavigation<any>();
-  const [search, setSearch] = useState("");
+  const navigation = useNavigation<NavigationProp>();
+  const [search, setSearch] = useState('');
 
-  const { data = [], isLoading } = useQuery({
-    queryKey: ["services"],
+  const { data = [], isLoading } = useQuery<Service[]>({
+    queryKey: ['services'],
     queryFn: fetchServices,
   });
 
   const filteredData = useMemo(() => {
     if (!search.trim()) return data;
     const q = search.toLowerCase();
+
     return data.filter(
-      (item: any) =>
-        item.name?.toLowerCase().includes(q) ||
-        item.description?.toLowerCase().includes(q)
+      item => item.title.toLowerCase().includes(q) || item.description?.toLowerCase().includes(q),
     );
   }, [data, search]);
 
-  const renderItem = ({ item }: { item: any }) => (
-    <ServiceCard
-      service={item}
-      onPress={() => navigation.push("ServiceDetail", { id: item.id })}
-    />
+  const renderItem = useCallback(
+    ({ item }: { item: Service }) => (
+      <ServiceCard
+        service={item}
+        onPress={() => navigation.push('ServiceDetail', { id: item.id })}
+      />
+    ),
+    [navigation],
   );
 
   return (
     <View style={styles.container}>
       {/* Search Bar */}
       <View style={styles.searchBar}>
-        <Ionicons name="search" size={20} color="#888" />
+        <Ionicons name="search" size={20} color={colors.subdued} />
 
         <TextInput
           style={styles.searchInput}
           placeholder="Search services"
           value={search}
           onChangeText={setSearch}
-          placeholderTextColor="#888"
+          placeholderTextColor={colors.subdued}
           clearButtonMode="while-editing"
         />
 
         {!!search && (
-          <TouchableOpacity onPress={() => setSearch("")}>
-            <Ionicons name="close-circle" size={18} color="#888" />
+          <TouchableOpacity onPress={() => setSearch('')}>
+            <Ionicons name="close-circle" size={18} color={colors.subdued} />
           </TouchableOpacity>
         )}
       </View>
@@ -61,7 +81,7 @@ export default function ServicesScreen() {
         <FlashList
           data={filteredData}
           numColumns={2}
-          keyExtractor={(item: any) => item.id}
+          keyExtractor={item => item.id}
           renderItem={renderItem}
           showsVerticalScrollIndicator={false}
           contentContainerStyle={styles.list}
@@ -75,46 +95,38 @@ export default function ServicesScreen() {
 
 const styles = StyleSheet.create({
   container: {
+    backgroundColor: colors.white,
     flex: 1,
-    backgroundColor: "#fff",
     paddingTop: 12,
   },
 
   list: {
-    paddingHorizontal: 8,
     paddingBottom: 16,
+    paddingHorizontal: 8,
   },
 
-  /* Search Bar */
   searchBar: {
-    marginHorizontal: "5%",
-    maxWidth: 320,
-    alignSelf: "center",
-    marginBottom: 12,
-
-    flexDirection: "row",
-    alignItems: "center",
+    alignItems: 'center',
+    alignSelf: 'center',
+    backgroundColor: colors.backgroundSoft,
+    borderRadius: 16,
+    elevation: 4,
+    flexDirection: 'row',
     gap: 8,
-
+    marginBottom: 12,
+    marginHorizontal: '5%',
+    maxWidth: 320,
     paddingHorizontal: 12,
     paddingVertical: 10,
-
-    borderRadius: 16,
-    backgroundColor: "#f9f9f9",
-
-    // Android shadow
-    elevation: 4,
-
-    // iOS shadow
-    shadowColor: "#000",
+    shadowColor: colors.shadow,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.15,
     shadowRadius: 6,
   },
 
   searchInput: {
+    color: colors.text,
     flex: 1,
     fontSize: 15,
-    color: "#222",
   },
 });

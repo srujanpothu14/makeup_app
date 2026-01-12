@@ -1,7 +1,7 @@
 export type Service = {
   id: string;
   title: string;
-  category: "Makeup" | "Skincare" | "Hair" | "Nails";
+  category: 'Makeup' | 'Skincare' | 'Hair' | 'Nails';
   durationMin: number;
   price: number;
   thumbnailUrl?: string;
@@ -14,7 +14,7 @@ export type Booking = {
   serviceId: string;
   userId: string;
   startTime: string; // ISO
-  status: "pending" | "confirmed" | "cancelled";
+  status: 'pending' | 'confirmed' | 'cancelled';
 };
 
 export type User = {

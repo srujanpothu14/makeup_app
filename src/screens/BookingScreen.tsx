@@ -1,22 +1,39 @@
-import React, { useState } from "react";
-import { View, Text } from "react-native";
-import { Button } from "react-native-paper";
-import dayjs from "dayjs";
-import { createBooking } from "../mock/api";
-import { useAuthStore } from "../store/useAuthStore";
+import React, { useState } from 'react';
+import { View, Text, StyleSheet } from 'react-native';
+import { Button } from 'react-native-paper';
+import dayjs from 'dayjs';
+import { RouteProp } from '@react-navigation/native';
 
-export default function BookingScreen({ route }: any) {
+import { createBooking } from '../mock/api';
+import { colors } from '../theme';
+import { useAuthStore } from '../store/useAuthStore';
+
+/* -------------------- TYPES -------------------- */
+
+type RootStackParamList = {
+  Booking: { id: string };
+};
+
+type BookingScreenRouteProp = RouteProp<RootStackParamList, 'Booking'>;
+
+type Props = {
+  route: BookingScreenRouteProp;
+};
+
+/* -------------------- SCREEN -------------------- */
+
+export default function BookingScreen({ route }: Props) {
   const { id: serviceId } = route.params;
   const { user } = useAuthStore();
   const [selected, setSelected] = useState<string | null>(null);
 
   const slots = Array.from({ length: 6 }, (_, i) =>
     dayjs()
-      .add(i + 1, "day")
+      .add(i + 1, 'day')
       .hour(11)
       .minute(0)
       .second(0)
-      .toISOString()
+      .toISOString(),
   );
 
   const confirm = async () => {
@@ -26,18 +43,16 @@ export default function BookingScreen({ route }: any) {
 
   if (!user) {
     return (
-      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-        <Text style={{ fontSize: 16, color: "red" }}>
-          You must be logged in to make a booking.
-        </Text>
+      <View style={styles.centered}>
+        <Text style={styles.warningText}>You must be logged in to make a booking.</Text>
       </View>
     );
   }
 
-  if (!route?.params?.id) {
+  if (!serviceId) {
     return (
-      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-        <Text style={{ fontSize: 16, color: "red" }}>
+      <View style={styles.centered}>
+        <Text style={styles.warningText}>
           Service ID is missing. Please navigate to this screen properly.
         </Text>
       </View>
@@ -45,28 +60,62 @@ export default function BookingScreen({ route }: any) {
   }
 
   return (
-    <View style={{ flex: 1, padding: 16 }}>
-      <Text style={{ fontSize: 18, fontWeight: "600", marginBottom: 12 }}>
-        Select a time
-      </Text>
-      {slots.map((iso) => (
+    <View style={styles.container}>
+      <Text style={styles.title}>Select a time</Text>
+
+      {slots.map(iso => (
         <Button
           key={iso}
-          mode={selected === iso ? "contained" : "outlined"}
-          style={{ marginBottom: 8 }}
+          mode={selected === iso ? 'contained' : 'outlined'}
+          style={styles.slotButton}
           onPress={() => setSelected(iso)}
         >
-          {dayjs(iso).format("ddd, D MMM • h:mm A")}
+          <Text style={styles.slotText}>{dayjs(iso).format('ddd, D MMM • h:mm A')}</Text>
         </Button>
       ))}
-      <Button
-        mode="contained"
-        disabled={!selected}
-        onPress={confirm}
-        style={{ marginTop: 12 }}
-      >
-        Confirm Booking
+
+      <Button mode="contained" disabled={!selected} onPress={confirm} style={styles.confirmButton}>
+        <Text style={styles.confirmText}>Confirm Booking</Text>
       </Button>
     </View>
   );
 }
+
+/* -------------------- STYLES -------------------- */
+
+const styles = StyleSheet.create({
+  centered: {
+    alignItems: 'center',
+    flex: 1,
+    justifyContent: 'center',
+  },
+  confirmButton: {
+    backgroundColor: colors.primary,
+    marginTop: 12,
+  },
+  confirmText: {
+    color: colors.white,
+    fontWeight: '600',
+  },
+  container: {
+    flex: 1,
+    padding: 16,
+  },
+  slotButton: {
+    marginBottom: 8,
+  },
+  slotText: {
+    color: colors.text,
+  },
+  title: {
+    fontSize: 18,
+    fontWeight: '600',
+    marginBottom: 12,
+  },
+
+  warningText: {
+    color: colors.primary,
+    fontSize: 16,
+    textAlign: 'center',
+  },
+});

@@ -1,5 +1,7 @@
-import React from "react";
-import { View, StyleSheet } from "react-native";
+import React from 'react';
+import { View, StyleSheet } from 'react-native';
+
+import { colors } from '../theme';
 
 export default React.memo(function CarouselDots({
   count,
@@ -18,17 +20,17 @@ export default React.memo(function CarouselDots({
 });
 
 const styles = StyleSheet.create({
+  active: { backgroundColor: colors.primary, width: 18 },
   container: {
-    flexDirection: "row",
-    justifyContent: "center",
+    flexDirection: 'row',
+    justifyContent: 'center',
     marginVertical: 10,
   },
   dot: {
-    width: 8,
-    height: 8,
+    backgroundColor: colors.mutedLight,
     borderRadius: 4,
-    backgroundColor: "#ddd",
+    height: 8,
     marginHorizontal: 4,
+    width: 8,
   },
-  active: { backgroundColor: "#E91E63", width: 18 },
 });

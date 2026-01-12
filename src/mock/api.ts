@@ -1,14 +1,26 @@
-
-import { seedUsers, seedServices } from './data';
-import { getBookings, setBookings, getToken, setToken, clearToken, getUser, setUser, clearUser } from './storage';
 import { Booking, Service, User } from '../types';
 
-// Simulate network latency
-const delay = (ms = 400) => new Promise((res) => setTimeout(res, ms));
+import { seedUsers, seedServices } from './data';
+import {
+  getBookings,
+  setBookings,
+  getToken,
+  setToken,
+  clearToken,
+  getUser,
+  setUser,
+  clearUser,
+} from './storage';
 
-export async function login(mobile_number: string, password: string): Promise<{ token: string; user: User }>{
+// Simulate network latency
+const delay = (ms = 400) => new Promise(res => setTimeout(res, ms));
+
+export async function login(
+  mobile_number: string,
+  password: string,
+): Promise<{ token: string; user: User }> {
   await delay();
-  const user = seedUsers.find((u) => u.mobile_number === mobile_number);
+  const user = seedUsers.find(u => u.mobile_number === mobile_number);
   if (!user || password !== 'password') throw new Error('Invalid credentials');
   const token = 'mock-token-' + Date.now();
   await setToken(token);
@@ -36,7 +48,7 @@ export async function fetchServices(): Promise<Service[]> {
 
 export async function fetchService(id: string): Promise<Service> {
   await delay(200);
-  const s = seedServices.find((x) => x.id === id);
+  const s = seedServices.find(x => x.id === id);
   if (!s) throw new Error('Service not found');
   return s;
 }
@@ -53,5 +65,5 @@ export async function createBooking(payload: Omit<Booking, 'id' | 'status'>): Pr
 export async function listBookings(userId: string): Promise<Booking[]> {
   await delay(200);
   const bookings: Booking[] = await getBookings();
-  return bookings.filter((b) => b.userId === userId);
+  return bookings.filter(b => b.userId === userId);
 }
