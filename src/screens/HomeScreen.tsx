@@ -144,7 +144,7 @@ export default function HomeScreen() {
     <SafeAreaView style={styles.safe} edges={['top']}>
       <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
         {/* HERO */}
-        <HeroHeader logo={logo} studio={ownerDetails.studio} location={ownerDetails.location} />
+        <HeroHeader logo={logo} studio={ownerDetails.studio} />
 
         {/* OFFERS */}
         <SectionHeader title="Exclusive Offers" />

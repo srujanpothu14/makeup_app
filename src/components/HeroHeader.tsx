@@ -1,25 +1,25 @@
 import React from 'react';
 import { View, Image, Text, StyleSheet, ImageSourcePropType } from 'react-native';
 
-import { colors } from '../theme';
-
 /* -------------------- TYPES -------------------- */
 
 type Props = {
   logo: ImageSourcePropType;
   studio: string;
-  location?: string;
 };
 
 /* -------------------- COMPONENT -------------------- */
 
-export default function HeroHeader({ logo, studio, location }: Props) {
+export default function HeroHeader({ logo }: Props) {
   return (
-    <View style={styles.row}>
-      <Image source={logo} style={styles.logo} />
-      <View style={styles.textWrap}>
-        <Text style={styles.title}>{studio}</Text>
-        {location ? <Text style={styles.location}>{location}</Text> : null}
+    <View style={styles.container}>
+      <View style={styles.row}>
+        <Image source={logo} style={styles.logo} />
+
+        <View style={styles.textWrap}>
+          <Text style={styles.title}>Manasa Beauty &</Text>
+          <Text style={styles.title}>Makeup Studio</Text>
+        </View>
       </View>
     </View>
   );
@@ -28,11 +28,12 @@ export default function HeroHeader({ logo, studio, location }: Props) {
 /* -------------------- STYLES -------------------- */
 
 const styles = StyleSheet.create({
-  location: {
-    color: colors.primary,
-    fontSize: 13,
-    marginTop: 4,
+  container: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 16,
   },
+
   logo: {
     height: 70,
     resizeMode: 'contain',
@@ -44,11 +45,12 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   textWrap: {
-    flex: 1,
+    alignItems: 'flex-start',
   },
 
   title: {
     fontFamily: 'RalewayBold',
-    fontSize: 28,
+    fontSize: 26,
+    lineHeight: 30,
   },
 });
