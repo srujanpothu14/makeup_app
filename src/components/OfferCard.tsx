@@ -1,5 +1,5 @@
 import React from 'react';
-import { TouchableOpacity, View, Text, StyleSheet } from 'react-native';
+import { TouchableOpacity, View, Text, StyleSheet, Dimensions } from 'react-native';
 
 import { colors } from '../theme';
 
@@ -11,11 +11,15 @@ type Offer = {
   serviceId?: string;
 };
 
+const { width } = Dimensions.get('window');
+
 export default function OfferCard({ offer, onPress }: { offer: Offer; onPress?: () => void }) {
   return (
     <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.9}>
       <Text style={styles.title}>{offer.title}</Text>
+
       {offer.description ? <Text style={styles.desc}>{offer.description}</Text> : null}
+
       {typeof offer.discountPercent === 'number' && (
         <View style={styles.badge}>
           <Text style={styles.badgeText}>{offer.discountPercent}% OFF</Text>
@@ -32,20 +36,32 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     paddingVertical: 4,
     position: 'absolute',
-    right: 10,
-    top: 10,
+    right: 12,
+    top: 12,
   },
-  badgeText: { color: colors.white, fontSize: 12, fontWeight: '700' },
+  badgeText: {
+    color: colors.white,
+    fontSize: 12,
+    fontWeight: '700',
+  },
   card: {
-    backgroundColor: colors.white,
+    backgroundColor: colors.primaryLight,
     borderRadius: 20,
-    height: 100,
-    marginBottom: 10,
-    marginRight: 12,
-    marginTop: 10,
-    padding: 14,
-    width: 150,
+    height: 110,
+    justifyContent: 'center',
+    marginHorizontal: 16,
+    marginVertical: 10,
+    padding: 16,
+    width: width - 32, // 👈 full width with side spacing
   },
-  desc: { color: colors.subdued, fontSize: 13 },
-  title: { fontFamily: 'RalewayBold', fontSize: 16, marginBottom: 4 },
+  desc: {
+    color: colors.subdued,
+    fontSize: 13,
+  },
+
+  title: {
+    fontFamily: 'RalewayBold',
+    fontSize: 16,
+    marginBottom: 6,
+  },
 });

@@ -19,7 +19,7 @@ import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import { useAuthStore } from '../store/useAuthStore';
-import logo from '../assets/manasa_logo.png';
+import login_cover_photo from '../assets/login_cover_photo.jpg';
 import { colors } from '../theme';
 
 /* -------------------- TYPES -------------------- */
@@ -100,7 +100,7 @@ function LoginScreen() {
               {/* LOGO */}
               <View style={styles.logoWrap}>
                 <Animated.Image
-                  source={logo}
+                  source={login_cover_photo}
                   style={[
                     styles.logo,
                     {
