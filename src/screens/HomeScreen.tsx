@@ -32,7 +32,7 @@ import locationImg from '../assets/location.png';
 const { width } = Dimensions.get('window');
 const OFFER_CARD_WIDTH = width - 32;
 const REVIEW_CARD_WIDTH = 220;
-const SERVICE_CARD_WIDTH = 200;
+const SERVICE_CARD_WIDTH = (width - 48) / 2;
 
 /* -------------------- TYPES -------------------- */
 
@@ -124,20 +124,6 @@ export default function HomeScreen() {
     setOfferIndex(index);
   }, []);
 
-  /* -------------------- RENDERERS -------------------- */
-
-  const renderService = useCallback(
-    ({ item }: { item: Service }) => (
-      <View style={styles.cardWrapper}>
-        <ServiceCard
-          service={item}
-          onPress={() => navigation.push('ServiceDetail', { id: item.id })}
-        />
-      </View>
-    ),
-    [navigation],
-  );
-
   /* -------------------- UI -------------------- */
 
   return (
@@ -176,14 +162,34 @@ export default function HomeScreen() {
 
         <FlashList
           data={featuredServices}
-          renderItem={renderService}
           keyExtractor={item => item.id}
           horizontal
           pagingEnabled
           showsHorizontalScrollIndicator={false}
+          estimatedItemSize={width}
+          renderItem={({ item, index }) => {
+            if (index % 2 !== 0) return null;
+
+            const second = featuredServices[index + 1];
+
+            return (
+              <View style={styles.servicePage}>
+                <ServiceCard
+                  service={item}
+                  onPress={() => navigation.push('ServiceDetail', { id: item.id })}
+                />
+
+                {second && (
+                  <ServiceCard
+                    service={second}
+                    onPress={() => navigation.push('ServiceDetail', { id: second.id })}
+                  />
+                )}
+              </View>
+            );
+          }}
           onScroll={handleServiceScroll}
           scrollEventThrottle={16}
-          estimatedItemSize={SERVICE_CARD_WIDTH}
         />
 
         <CarouselDots count={featuredServices.length} active={serviceIndex} />
@@ -277,6 +283,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
     paddingVertical: 10,
   },
+
   bookingBtnText: { color: colors.white, fontWeight: '600' },
   bookingCard: {
     alignItems: 'center',
@@ -287,7 +294,6 @@ const styles = StyleSheet.create({
   },
 
   bookingTitle: { fontFamily: 'RalewayBold', fontSize: 20, marginBottom: 10 },
-  cardWrapper: { width: SERVICE_CARD_WIDTH },
   container: { flex: 1 },
   feedbackCard: {
     backgroundColor: colors.backgroundSoft,
@@ -330,4 +336,10 @@ const styles = StyleSheet.create({
   },
   sectionTitle: { fontFamily: 'RalewayBold', fontSize: 18 },
   seeAll: { color: colors.primary },
+  servicePage: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingHorizontal: 8,
+    width,
+  },
 });

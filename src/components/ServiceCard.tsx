@@ -12,7 +12,6 @@ type Service = {
   price: number;
   thumbnailUrl?: string;
 };
-
 type Props = {
   service: Service;
   onPress: () => void;
@@ -45,14 +44,8 @@ const ServiceCard: React.FC<Props> = ({ service, onPress }) => {
           <View style={styles.footer}>
             <Text style={styles.price}>₹{service.price}</Text>
 
-            <Button
-              mode="contained"
-              compact
-              onPress={onPress}
-              style={styles.button}
-              labelStyle={styles.buttonLabel}
-            >
-              <Text>Book</Text>
+            <Button mode="contained" compact onPress={onPress} style={styles.button}>
+              <Text style={styles.buttonLabel}>Book</Text>
             </Button>
           </View>
         </Card.Content>
@@ -64,15 +57,16 @@ const ServiceCard: React.FC<Props> = ({ service, onPress }) => {
 const styles = StyleSheet.create({
   button: {
     backgroundColor: colors.primary,
-    borderRadius: 22,
+    borderRadius: 16,
+    width: 55,
   },
   buttonLabel: {
-    color: colors.white,
+    color: colors.mutedLight,
     fontSize: 12,
     fontWeight: '700',
   },
   card: {
-    backgroundColor: colors.white,
+    backgroundColor: colors.primaryLight,
     borderRadius: 20,
     flex: 1,
     margin: 8,
@@ -96,17 +90,17 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   price: {
-    color: colors.primary,
+    color: colors.shadow,
     fontSize: 17,
     fontWeight: '800',
   },
   subtitle: {
-    color: colors.accent,
+    color: colors.muted,
     fontSize: 12,
     marginBottom: 10,
   },
   title: {
-    color: colors.primary,
+    color: colors.text,
     fontSize: 15,
     fontWeight: '700',
     marginBottom: 2,
