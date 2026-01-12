@@ -41,27 +41,27 @@ const styles = StyleSheet.create({
   },
   badgeText: {
     color: colors.white,
-    fontSize: 12,
+    fontSize: 14,
     fontWeight: '700',
   },
   card: {
     backgroundColor: colors.primaryLight,
     borderRadius: 20,
-    height: 110,
+    height: 80,
     justifyContent: 'center',
     marginHorizontal: 16,
     marginVertical: 10,
-    padding: 16,
-    width: width - 32, // 👈 full width with side spacing
+    padding: 20,
+    width: width - 32,
   },
   desc: {
     color: colors.subdued,
-    fontSize: 13,
+    fontSize: 14,
   },
 
   title: {
     fontFamily: 'RalewayBold',
-    fontSize: 16,
+    fontSize: 18,
     marginBottom: 6,
   },
 });

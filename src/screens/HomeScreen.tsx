@@ -322,6 +322,7 @@ const styles = StyleSheet.create({
   ownerText: { flex: 1 },
   safe: { backgroundColor: colors.backgroundSoft, flex: 1 },
   sectionHeaderRow: {
+    alignItems: 'center',
     flexDirection: 'row',
     justifyContent: 'space-between',
     marginTop: 16,
