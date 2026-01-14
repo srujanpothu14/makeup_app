@@ -151,7 +151,7 @@ export default function HomeScreen() {
         fetchFeedbacks(),
       ]);
 
-      setGalleryPreview(gallery.slice(0, 5));
+      setGalleryPreview(gallery.slice(0, 6)); // 6 so we get 3 pages of 2 items
       setFeedbacks(reviews);
     };
 
@@ -192,8 +192,12 @@ export default function HomeScreen() {
         {/* OFFERS */}
         <SectionHeader title="Exclusive Offers" />
 
-        <ScrollView horizontal pagingEnabled showsHorizontalScrollIndicator={false}
-          onScroll={handleOfferScroll} scrollEventThrottle={16}>
+        <ScrollView
+          horizontal
+          pagingEnabled
+          showsHorizontalScrollIndicator={false}
+          onScroll={handleOfferScroll}
+          scrollEventThrottle={16}>
           {memoOffers.map(offer => (
             <OfferCard
               key={offer.id}
@@ -249,39 +253,73 @@ export default function HomeScreen() {
 
         <CarouselDots count={featuredServices.length} active={serviceIndex} />
 
-        {/* GALLERY */}
+        {/* GALLERY (2 PER VIEW) */}
         <SectionHeader
           title="Our Work"
           actionLabel="View all"
           onActionPress={() => navigation.navigate('Gallery')}
         />
 
-        <ScrollView horizontal pagingEnabled showsHorizontalScrollIndicator={false}
-          onScroll={handleGalleryScroll} scrollEventThrottle={16}>
-          {galleryPreview.map(item => (
-            <TouchableOpacity
-              key={item.id}
-              style={styles.galleryItem}
-              onPress={() => setSelectedItem(item)}
-            >
-              {item.type === 'image' ? (
-                <Image source={{ uri: item.url }} style={styles.galleryImage} />
-              ) : (
-                <View style={[styles.galleryImage, styles.videoPlaceholder]}>
-                  <Text style={styles.videoText}>🎬 Video</Text>
+        <ScrollView
+          horizontal
+          pagingEnabled
+          showsHorizontalScrollIndicator={false}
+          onScroll={handleGalleryScroll}
+          scrollEventThrottle={16}
+        >
+          {Array.from({ length: Math.ceil(galleryPreview.length / 2) }).map(
+            (_, i) => {
+              const first = galleryPreview[i * 2];
+              const second = galleryPreview[i * 2 + 1];
+
+              return (
+                <View key={i} style={styles.galleryPage}>
+                  {[first, second].map(
+                    item =>
+                      item && (
+                        <TouchableOpacity
+                          key={item.id}
+                          style={styles.galleryGridItem}
+                          onPress={() => setSelectedItem(item)}
+                        >
+                          {item.type === 'image' ? (
+                            <Image
+                              source={{ uri: item.url }}
+                              style={styles.galleryImage}
+                            />
+                          ) : (
+                            <View
+                              style={[
+                                styles.galleryImage,
+                                styles.videoPlaceholder,
+                              ]}
+                            >
+                              <Text style={styles.videoText}>🎬 Video</Text>
+                            </View>
+                          )}
+                        </TouchableOpacity>
+                      ),
+                  )}
                 </View>
-              )}
-            </TouchableOpacity>
-          ))}
+              );
+            },
+          )}
         </ScrollView>
 
-        <CarouselDots count={galleryPreview.length} active={galleryIndex} />
+        <CarouselDots
+          count={Math.ceil(galleryPreview.length / 2)}
+          active={galleryIndex}
+        />
 
         {/* REVIEWS */}
         <SectionHeader title="Customer Reviews" />
 
-        <ScrollView horizontal pagingEnabled showsHorizontalScrollIndicator={false}
-          onScroll={handleReviewScroll} scrollEventThrottle={16}>
+        <ScrollView
+          horizontal
+          pagingEnabled
+          showsHorizontalScrollIndicator={false}
+          onScroll={handleReviewScroll}
+          scrollEventThrottle={16}>
           {feedbacks.map(f => (
             <View key={f.id} style={styles.feedbackCard}>
               <Text style={styles.feedbackText}>{f.text}</Text>
@@ -356,18 +394,36 @@ const styles = StyleSheet.create({
     width,
   },
 
-  galleryItem: { width, paddingHorizontal: 16 },
+  galleryPage: {
+    width,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingHorizontal: 12,
+  },
+
+  galleryGridItem: {
+    width: (width - 40) / 2,
+    borderRadius: 16,
+    overflow: 'hidden',
+  },
 
   galleryImage: {
     width: '100%',
-    height: 220,
-    borderRadius: 20,
+    height: 180,
+    borderRadius: 16,
     backgroundColor: colors.placeholder,
   },
 
-  videoPlaceholder: { justifyContent: 'center', alignItems: 'center' },
+  videoPlaceholder: {
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
 
-  videoText: { fontSize: 16, fontWeight: '600', color: colors.text },
+  videoText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: colors.text,
+  },
 
   feedbackCard: {
     backgroundColor: colors.backgroundSoft,
@@ -402,8 +458,6 @@ const styles = StyleSheet.create({
   },
 
   bookingBtnText: { color: colors.white, fontWeight: '600' },
-
-  /* MODAL */
 
   modalContainer: {
     flex: 1,
