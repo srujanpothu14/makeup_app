@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback, useEffect } from 'react';
+import React, { useState, useMemo, useCallback, useEffect } from "react";
 import {
   View,
   Text,
@@ -13,28 +13,28 @@ import {
   NativeScrollEvent,
   Modal,
   StatusBar,
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { FlashList } from '@shopify/flash-list';
-import { useNavigation, NavigationProp } from '@react-navigation/native';
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { FlashList } from "@shopify/flash-list";
+import { useNavigation, NavigationProp } from "@react-navigation/native";
 
-import MapCard from '../components/MapsLocationCard';
-import ServiceCard from '../components/ServiceCard';
-import OfferCard from '../components/OfferCard';
-import CarouselDots from '../components/CarouselDots';
-import HeroHeader from '../components/HeroHeader';
-import InfoRow from '../components/InfoRow';
+import MapCard from "../components/MapsLocationCard";
+import ServiceCard from "../components/ServiceCard";
+import OfferCard from "../components/OfferCard";
+import CarouselDots from "../components/CarouselDots";
+import HeroHeader from "../components/HeroHeader";
+import InfoRow from "../components/InfoRow";
 
-import { seedServices, offers } from '../mock/data';
-import { fetchpreviousWorkMedia, fetchFeedbacks } from '../mock/api';
-import { colors } from '../theme';
+import { seedServices, offers } from "../mock/data";
+import { fetchpreviousWorkMedia, fetchFeedbacks } from "../mock/api";
+import { colors } from "../theme";
 
-import logo from '../assets/manasa_logo.png';
-import locationImg from '../assets/location.png';
+import logo from "../assets/manasa_logo.png";
+import locationImg from "../assets/location.png";
 
 /* -------------------- CONSTANTS -------------------- */
 
-const { width } = Dimensions.get('window');
+const { width } = Dimensions.get("window");
 const OFFER_CARD_WIDTH = width - 32;
 const REVIEW_CARD_WIDTH = 220;
 const SERVICE_CARD_WIDTH = (width - 48) / 2;
@@ -66,7 +66,7 @@ type Offer = {
 type MediaItem = {
   id: string;
   url: string;
-  type: 'image' | 'video';
+  type: "image" | "video";
 };
 
 type Feedback = {
@@ -78,15 +78,15 @@ type Feedback = {
 /* -------------------- DATA -------------------- */
 
 const ownerDetails = {
-  name: 'Manasa',
-  studio: 'Manasa Beauty & Makeup Studio',
-  location: 'Korutla, Telangana',
-  phone: '+91 96421 66712',
+  name: "Manasa",
+  studio: "Manasa Beauty & Makeup Studio",
+  location: "Korutla, Telangana",
+  phone: "+91 96421 66712",
   instagram:
-    'https://www.instagram.com/manasa_makeovers_korutla?igsh=enR0ZGI4MHl3a25l',
-  whatsapp: 'https://wa.me/919642166712?text=Hi',
-  bio: 'Certified professional makeup artist with 6+ years of experience in bridal, party, and fashion makeup.',
-  photo: 'https://picsum.photos/seed/owner/400',
+    "https://www.instagram.com/manasa_makeovers_korutla?igsh=enR0ZGI4MHl3a25l",
+  whatsapp: "https://wa.me/919642166712?text=Hi",
+  bio: "Certified professional makeup artist with 6+ years of experience in bridal, party, and fashion makeup.",
+  photo: "https://picsum.photos/seed/owner/400",
 };
 
 /* -------------------- UTILS -------------------- */
@@ -94,10 +94,10 @@ const ownerDetails = {
 const openMaps = () => {
   const latitude = 18.8247202;
   const longitude = 78.7030454;
-  const name = 'Manasa Makeup Studio & Beauty Zone';
+  const name = "Manasa Makeup Studio & Beauty Zone";
 
   const url =
-    Platform.OS === 'ios'
+    Platform.OS === "ios"
       ? `maps:0,0?q=${name}@${latitude},${longitude}`
       : `geo:0,0?q=${latitude},${longitude}(${name})`;
 
@@ -138,8 +138,8 @@ export default function HomeScreen() {
   const [selectedItem, setSelectedItem] = useState<MediaItem | null>(null);
 
   const featuredServices = useMemo<Service[]>(
-    () => seedServices.filter(s => ['s1', 's2', 's3', 's4'].includes(s.id)),
-    [],
+    () => seedServices.filter((s) => ["s1", "s2", "s3", "s4"].includes(s.id)),
+    []
   );
 
   const memoOffers = useMemo<Offer[]>(() => offers, []);
@@ -158,7 +158,8 @@ export default function HomeScreen() {
     loadData();
   }, []);
 
-  const createScrollHandler = (itemWidth: number, setIndex: Function) =>
+  const createScrollHandler =
+    (itemWidth: number, setIndex: Function) =>
     (e: NativeSyntheticEvent<NativeScrollEvent>) => {
       const index = Math.round(e.nativeEvent.contentOffset.x / itemWidth);
       setIndex(index);
@@ -166,26 +167,26 @@ export default function HomeScreen() {
 
   const handleOfferScroll = useCallback(
     createScrollHandler(OFFER_CARD_WIDTH, setOfferIndex),
-    [],
+    []
   );
 
   const handleServiceScroll = useCallback(
     createScrollHandler(SERVICE_CARD_WIDTH, setServiceIndex),
-    [],
+    []
   );
 
   const handleReviewScroll = useCallback(
     createScrollHandler(REVIEW_CARD_WIDTH, setReviewIndex),
-    [],
+    []
   );
 
   const handleGalleryScroll = useCallback(
     createScrollHandler(width, setGalleryIndex),
-    [],
+    []
   );
 
   return (
-    <SafeAreaView style={styles.safe} edges={['top']}>
+    <SafeAreaView style={styles.safe} edges={["top"]}>
       <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
         <HeroHeader logo={logo} studio={ownerDetails.studio} />
 
@@ -197,13 +198,14 @@ export default function HomeScreen() {
           pagingEnabled
           showsHorizontalScrollIndicator={false}
           onScroll={handleOfferScroll}
-          scrollEventThrottle={16}>
-          {memoOffers.map(offer => (
+          scrollEventThrottle={16}
+        >
+          {memoOffers.map((offer) => (
             <OfferCard
               key={offer.id}
               offer={offer}
               onPress={() =>
-                navigation.navigate('OfferDetails', { id: offer.id })
+                navigation.navigate("OfferDetails", { id: offer.id })
               }
             />
           ))}
@@ -215,12 +217,12 @@ export default function HomeScreen() {
         <SectionHeader
           title="Featured Services"
           actionLabel="View all"
-          onActionPress={() => navigation.navigate('Services')}
+          onActionPress={() => navigation.navigate("Services")}
         />
 
         <FlashList
           data={featuredServices}
-          keyExtractor={item => item.id}
+          keyExtractor={(item) => item.id}
           horizontal
           pagingEnabled
           showsHorizontalScrollIndicator={false}
@@ -233,14 +235,14 @@ export default function HomeScreen() {
                 <ServiceCard
                   service={item}
                   onPress={() =>
-                    navigation.navigate('ServiceDetail', { id: item.id })
+                    navigation.navigate("ServiceDetail", { id: item.id })
                   }
                 />
                 {second && (
                   <ServiceCard
                     service={second}
                     onPress={() =>
-                      navigation.navigate('ServiceDetail', { id: second.id })
+                      navigation.navigate("ServiceDetail", { id: second.id })
                     }
                   />
                 )}
@@ -257,7 +259,7 @@ export default function HomeScreen() {
         <SectionHeader
           title="Our Work"
           actionLabel="View all"
-          onActionPress={() => navigation.navigate('Gallery')}
+          onActionPress={() => navigation.navigate("Gallery")}
         />
 
         <ScrollView
@@ -275,14 +277,14 @@ export default function HomeScreen() {
               return (
                 <View key={i} style={styles.galleryPage}>
                   {[first, second].map(
-                    item =>
+                    (item) =>
                       item && (
                         <TouchableOpacity
                           key={item.id}
                           style={styles.galleryGridItem}
                           onPress={() => setSelectedItem(item)}
                         >
-                          {item.type === 'image' ? (
+                          {item.type === "image" ? (
                             <Image
                               source={{ uri: item.url }}
                               style={styles.galleryImage}
@@ -298,11 +300,11 @@ export default function HomeScreen() {
                             </View>
                           )}
                         </TouchableOpacity>
-                      ),
+                      )
                   )}
                 </View>
               );
-            },
+            }
           )}
         </ScrollView>
 
@@ -319,23 +321,45 @@ export default function HomeScreen() {
           pagingEnabled
           showsHorizontalScrollIndicator={false}
           onScroll={handleReviewScroll}
-          scrollEventThrottle={16}>
-          {feedbacks.map(f => (
-            <View key={f.id} style={styles.feedbackCard}>
-              <Text style={styles.feedbackText}>{f.text}</Text>
-              <Text style={styles.feedbackName}>– {f.name}</Text>
-            </View>
-          ))}
+          scrollEventThrottle={16}
+        >
+          {Array.from({ length: Math.ceil(feedbacks.length / 2) }).map(
+            (_, i) => {
+              const first = feedbacks[i * 2];
+              const second = feedbacks[i * 2 + 1];
+
+              return (
+                <View key={i} style={styles.galleryPage}>
+                  {[first, second].map(
+                    (f) =>
+                      f && (
+                        <View key={f.id} style={styles.feedbackCard}>
+                          <Text style={styles.feedbackText}>{f.text}</Text>
+
+                          <View style={styles.feedbackFooter}>
+                            <Text style={styles.feedbackName}>– {f.name}</Text>
+                          </View>
+                        </View>
+                      )
+                  )}
+                </View>
+              );
+            }
+          )}
         </ScrollView>
 
-        <CarouselDots count={feedbacks.length} active={reviewIndex} />
+        <CarouselDots
+          count={Math.ceil(feedbacks.length / 2)}
+          active={reviewIndex}
+        />
 
         {/* CTA */}
         <View style={styles.bookingCard}>
           <Text style={styles.bookingTitle}>Ready to Glow?</Text>
           <TouchableOpacity
             style={styles.bookingBtn}
-            onPress={() => navigation.navigate('Booking')}>
+            onPress={() => navigation.navigate("Booking")}
+          >
             <Text style={styles.bookingBtnText}>Book Now</Text>
           </TouchableOpacity>
         </View>
@@ -353,7 +377,7 @@ export default function HomeScreen() {
             <Text style={styles.closeText}>✕</Text>
           </TouchableOpacity>
 
-          {selectedItem?.type === 'image' ? (
+          {selectedItem?.type === "image" ? (
             <Image
               source={{ uri: selectedItem.url }}
               style={styles.fullscreenImage}
@@ -377,27 +401,27 @@ const styles = StyleSheet.create({
   safe: { backgroundColor: colors.backgroundSoft, flex: 1 },
 
   sectionHeaderRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     paddingHorizontal: 16,
     marginTop: 10,
   },
 
-  sectionTitle: { fontFamily: 'RalewayBold', fontSize: 18 },
+  sectionTitle: { fontFamily: "RalewayBold", fontSize: 18 },
   seeAll: { color: colors.primary },
 
   servicePage: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    justifyContent: "space-between",
     paddingHorizontal: 8,
     width,
   },
 
   galleryPage: {
     width,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    justifyContent: "space-between",
     paddingHorizontal: 16,
     marginVertical: 8,
   },
@@ -405,40 +429,50 @@ const styles = StyleSheet.create({
   galleryGridItem: {
     width: (width - 48) / 2,
     borderRadius: 16,
-    overflow: 'hidden',
+    overflow: "hidden",
   },
 
   galleryImage: {
-    width: '100%',
+    width: "100%",
     height: 280,
     borderRadius: 16,
     backgroundColor: colors.placeholder,
   },
 
   videoPlaceholder: {
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
 
   videoText: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: "600",
     color: colors.text,
   },
 
   feedbackCard: {
-    backgroundColor: colors.backgroundSoft,
-    borderRadius: 14,
-    marginRight: 12,
     padding: 14,
-    width: REVIEW_CARD_WIDTH,
+    height: 90,
+    width: SERVICE_CARD_WIDTH,
+    justifyContent: "space-between",
+    backgroundColor: colors.primaryLight,
+    borderRadius: 20,
+    marginVertical: 8,
   },
 
   feedbackText: { color: colors.subdued },
-  feedbackName: { color: colors.primary, fontWeight: '600' },
+  feedbackFooter: {
+    alignItems: "flex-end",
+  },
+
+  feedbackName: {
+    color: colors.primary,
+    fontWeight: "600",
+    fontSize: 13,
+  },
 
   bookingCard: {
-    alignItems: 'center',
+    alignItems: "center",
     backgroundColor: colors.backgroundSoft,
     borderRadius: 16,
     margin: 16,
@@ -446,7 +480,7 @@ const styles = StyleSheet.create({
   },
 
   bookingTitle: {
-    fontFamily: 'RalewayBold',
+    fontFamily: "RalewayBold",
     fontSize: 20,
     marginBottom: 10,
   },
@@ -458,37 +492,37 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
   },
 
-  bookingBtnText: { color: colors.white, fontWeight: '600' },
+  bookingBtnText: { color: colors.white, fontWeight: "600" },
 
   modalContainer: {
     flex: 1,
-    backgroundColor: 'black',
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: "black",
+    justifyContent: "center",
+    alignItems: "center",
   },
 
   fullscreenImage: {
-    width: '100%',
-    height: '100%',
+    width: "100%",
+    height: "100%",
   },
 
   fullscreenVideo: {
-    width: '100%',
-    height: '100%',
-    justifyContent: 'center',
-    alignItems: 'center',
+    width: "100%",
+    height: "100%",
+    justifyContent: "center",
+    alignItems: "center",
   },
 
   closeBtn: {
-    position: 'absolute',
+    position: "absolute",
     top: 40,
     right: 20,
     zIndex: 10,
   },
 
   closeText: {
-    color: 'white',
+    color: "white",
     fontSize: 28,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
 });
