@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 import {
   View,
   Image,
@@ -7,10 +7,10 @@ import {
   Linking,
   Text,
   ImageSourcePropType,
-} from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+} from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 
-import { colors } from '../theme';
+import { colors } from "../theme";
 
 /* -------------------- TYPES -------------------- */
 
@@ -20,9 +20,9 @@ type Props = {
 
 /* -------------------- COMPONENT -------------------- */
 
-export default function MapImageCard({ image }: Props) {
+export default function MapCard({ image }: Props) {
   const openMaps = () => {
-    Linking.openURL('https://maps.app.goo.gl/FCCi1bsaCp5yQNi77');
+    Linking.openURL("https://maps.app.goo.gl/FCCi1bsaCp5yQNi77");
   };
 
   return (
@@ -48,7 +48,7 @@ const styles = StyleSheet.create({
     elevation: 4,
     marginBottom: 20,
     marginHorizontal: 16,
-    overflow: 'hidden',
+    overflow: "hidden",
     shadowColor: colors.shadow,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
@@ -57,25 +57,25 @@ const styles = StyleSheet.create({
 
   image: {
     height: 180,
-    width: '100%',
+    width: "100%",
   },
 
   overlay: {
-    alignItems: 'center',
+    alignItems: "center",
     backgroundColor: colors.primary,
     borderRadius: 20,
     bottom: 12,
-    flexDirection: 'row',
+    flexDirection: "row",
     gap: 6,
     paddingHorizontal: 12,
     paddingVertical: 6,
-    position: 'absolute',
+    position: "absolute",
     right: 12,
   },
 
   text: {
     color: colors.white,
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: "600",
   },
 });

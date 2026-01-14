@@ -146,7 +146,7 @@ export default function HomeScreen() {
             <OfferCard
               key={offer.id}
               offer={offer}
-              onPress={() => navigation.push('OfferDetails', { id: offer.id })}
+              onPress={() => navigation.navigate('OfferDetails', { id: offer.id })}
             />
           ))}
         </ScrollView>
@@ -166,7 +166,6 @@ export default function HomeScreen() {
           horizontal
           pagingEnabled
           showsHorizontalScrollIndicator={false}
-          estimatedItemSize={width}
           renderItem={({ item, index }) => {
             if (index % 2 !== 0) return null;
 
@@ -176,13 +175,13 @@ export default function HomeScreen() {
               <View style={styles.servicePage}>
                 <ServiceCard
                   service={item}
-                  onPress={() => navigation.push('ServiceDetail', { id: item.id })}
+                  onPress={() => navigation.navigate('ServiceDetail', { id: item.id })}
                 />
 
                 {second && (
                   <ServiceCard
                     service={second}
-                    onPress={() => navigation.push('ServiceDetail', { id: second.id })}
+                    onPress={() => navigation.navigate('ServiceDetail', { id: second.id })}
                   />
                 )}
               </View>
@@ -331,7 +330,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginTop: 16,
+    marginTop: 10,
     paddingHorizontal: 16,
   },
   sectionTitle: { fontFamily: 'RalewayBold', fontSize: 18 },

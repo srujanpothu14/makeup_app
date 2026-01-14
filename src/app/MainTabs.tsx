@@ -1,21 +1,21 @@
-import React from 'react';
-import { Image, StyleSheet, View, Text } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import React from "react";
+import { Image, StyleSheet, View, Text } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { Ionicons } from "@expo/vector-icons";
+import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 
-import { colors } from '../theme';
-import ServicesScreen from '../screens/ServicesScreen';
-import GalleryScreen from '../screens/GalleryScreen';
-import BookingScreen from '../screens/BookingScreen';
-import ProfileScreen from '../screens/ProfileScreen';
-import HomeScreen from '../screens/HomeScreen';
+import { colors } from "../theme";
+import ServicesScreen from "../screens/ServicesScreen";
+import GalleryScreen from "../screens/GalleryScreen";
+import BookingScreen from "../screens/BookingScreen";
+import ProfileScreen from "../screens/ProfileScreen";
+import HomeScreen from "../screens/HomeScreen";
 
 const Tabs = createBottomTabNavigator();
 
 /* -------------------- TYPES -------------------- */
 
-type IoniconName = React.ComponentProps<typeof Ionicons>['name'];
+type IoniconName = React.ComponentProps<typeof Ionicons>["name"];
 
 type TabIcon = {
   filled: IoniconName;
@@ -25,7 +25,9 @@ type TabIcon = {
 /* -------------------- BOOKING WRAPPER -------------------- */
 
 function BookingWrapper() {
-  return <BookingScreen route={{ params: { id: 'default-service-id' } }} />;
+  // Provide a minimal route prop for local rendering
+  const mockRoute = { params: { id: "default-service-id" } } as any;
+  return <BookingScreen route={mockRoute} />;
 }
 
 /* -------------------- MAIN TABS -------------------- */
@@ -60,14 +62,16 @@ export default function MainTabs() {
 
         tabBarIcon: ({ color, size, focused }) => {
           const icons: Record<string, TabIcon> = {
-            Home: { filled: 'home', outline: 'home-outline' },
-            Services: { filled: 'list', outline: 'list-outline' },
-            Gallery: { filled: 'images', outline: 'images-outline' },
-            Booking: { filled: 'calendar', outline: 'calendar-outline' },
-            Profile: { filled: 'person', outline: 'person-outline' },
+            Home: { filled: "home", outline: "home-outline" },
+            Services: { filled: "list", outline: "list-outline" },
+            Gallery: { filled: "images", outline: "images-outline" },
+            Booking: { filled: "calendar", outline: "calendar-outline" },
+            Profile: { filled: "person", outline: "person-outline" },
           };
 
-          const iconName = focused ? icons[route.name].filled : icons[route.name].outline;
+          const iconName = focused
+            ? icons[route.name].filled
+            : icons[route.name].outline;
 
           return (
             <View style={[styles.tabButton, focused && styles.tabButtonActive]}>
@@ -76,7 +80,12 @@ export default function MainTabs() {
                 size={focused ? size + 2 : size}
                 color={focused ? colors.primary : color}
               />
-              <Text style={[styles.tabButtonLabel, focused && styles.tabButtonLabelActive]}>
+              <Text
+                style={[
+                  styles.tabButtonLabel,
+                  focused && styles.tabButtonLabelActive,
+                ]}
+              >
                 {route.name}
               </Text>
             </View>
@@ -84,11 +93,31 @@ export default function MainTabs() {
         },
       })}
     >
-      <Tabs.Screen name="Home" component={HomeScreen} options={{ headerShown: false }} />
-      <Tabs.Screen name="Services" component={ServicesScreen} options={tabOptions('Services')} />
-      <Tabs.Screen name="Gallery" component={GalleryScreen} options={tabOptions('Gallery')} />
-      <Tabs.Screen name="Booking" component={BookingWrapper} options={tabOptions('Booking')} />
-      <Tabs.Screen name="Profile" component={ProfileScreen} options={tabOptions('Profile')} />
+      <Tabs.Screen
+        name="Home"
+        component={HomeScreen}
+        options={{ headerShown: false }}
+      />
+      <Tabs.Screen
+        name="Services"
+        component={ServicesScreen}
+        options={tabOptions("Services")}
+      />
+      <Tabs.Screen
+        name="Gallery"
+        component={GalleryScreen}
+        options={tabOptions("Gallery")}
+      />
+      <Tabs.Screen
+        name="Booking"
+        component={BookingWrapper}
+        options={tabOptions("Booking")}
+      />
+      <Tabs.Screen
+        name="Profile"
+        component={ProfileScreen}
+        options={tabOptions("Profile")}
+      />
     </Tabs.Navigator>
   );
 }
@@ -98,10 +127,12 @@ export default function MainTabs() {
 const tabOptions = (title: string) => ({
   title,
   headerTitleStyle: {
-    fontFamily: 'RalewayBold',
+    fontFamily: "RalewayBold",
     fontSize: 22,
   },
-  headerLeft: () => <Image source={require('../assets/manasa_logo.png')} style={styles.logo} />,
+  headerLeft: () => (
+    <Image source={require("../assets/manasa_logo.png")} style={styles.logo} />
+  ),
 });
 
 /* -------------------- STYLES -------------------- */
@@ -127,10 +158,10 @@ const styles = StyleSheet.create({
   },
 
   tabButton: {
-    alignItems: 'center',
+    alignItems: "center",
     borderRadius: 18,
-    flexDirection: 'column',
-    justifyContent: 'center',
+    flexDirection: "column",
+    justifyContent: "center",
     paddingHorizontal: 6,
     paddingVertical: 4,
   },
@@ -144,7 +175,7 @@ const styles = StyleSheet.create({
   tabButtonLabel: {
     color: colors.accent,
     fontSize: 11,
-    fontWeight: '600',
+    fontWeight: "600",
     marginTop: 4,
   },
 
