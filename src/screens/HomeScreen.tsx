@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import {
   View,
   Text,
@@ -11,6 +11,8 @@ import {
   Dimensions,
   NativeSyntheticEvent,
   NativeScrollEvent,
+  Modal,
+  StatusBar,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { FlashList } from '@shopify/flash-list';
@@ -22,8 +24,11 @@ import OfferCard from '../components/OfferCard';
 import CarouselDots from '../components/CarouselDots';
 import HeroHeader from '../components/HeroHeader';
 import InfoRow from '../components/InfoRow';
+
 import { seedServices, offers } from '../mock/data';
+import { fetchpreviousWorkMedia, fetchFeedbacks } from '../mock/api';
 import { colors } from '../theme';
+
 import logo from '../assets/manasa_logo.png';
 import locationImg from '../assets/location.png';
 
@@ -41,6 +46,7 @@ type RootStackParamList = {
   OfferDetails: { id: string };
   Services: undefined;
   Booking: undefined;
+  Gallery: undefined;
 };
 
 type Service = {
@@ -57,6 +63,18 @@ type Offer = {
   title: string;
 };
 
+type MediaItem = {
+  id: string;
+  url: string;
+  type: 'image' | 'video';
+};
+
+type Feedback = {
+  id: string;
+  name: string;
+  text: string;
+};
+
 /* -------------------- DATA -------------------- */
 
 const ownerDetails = {
@@ -64,17 +82,12 @@ const ownerDetails = {
   studio: 'Manasa Beauty & Makeup Studio',
   location: 'Korutla, Telangana',
   phone: '+91 96421 66712',
-  instagram: 'https://www.instagram.com/manasa_makeovers_korutla?igsh=enR0ZGI4MHl3a25l',
+  instagram:
+    'https://www.instagram.com/manasa_makeovers_korutla?igsh=enR0ZGI4MHl3a25l',
   whatsapp: 'https://wa.me/919642166712?text=Hi',
   bio: 'Certified professional makeup artist with 6+ years of experience in bridal, party, and fashion makeup.',
   photo: 'https://picsum.photos/seed/owner/400',
 };
-
-const feedbacks = [
-  { id: 'f1', name: 'Aishwarya', text: 'Absolutely loved my bridal makeup!' },
-  { id: 'f2', name: 'Sneha', text: 'Great service, very friendly artist.' },
-  { id: 'f3', name: 'Pooja', text: 'Best makeup studio in Hyderabad!' },
-];
 
 /* -------------------- UTILS -------------------- */
 
@@ -91,6 +104,25 @@ const openMaps = () => {
   Linking.openURL(url);
 };
 
+const SectionHeader = ({
+  title,
+  actionLabel,
+  onActionPress,
+}: {
+  title: string;
+  actionLabel?: string;
+  onActionPress?: () => void;
+}) => (
+  <View style={styles.sectionHeaderRow}>
+    <Text style={styles.sectionTitle}>{title}</Text>
+    {actionLabel && onActionPress && (
+      <TouchableOpacity onPress={onActionPress}>
+        <Text style={styles.seeAll}>{actionLabel}</Text>
+      </TouchableOpacity>
+    )}
+  </View>
+);
+
 /* -------------------- SCREEN -------------------- */
 
 export default function HomeScreen() {
@@ -99,6 +131,11 @@ export default function HomeScreen() {
   const [reviewIndex, setReviewIndex] = useState(0);
   const [serviceIndex, setServiceIndex] = useState(0);
   const [offerIndex, setOfferIndex] = useState(0);
+  const [galleryIndex, setGalleryIndex] = useState(0);
+
+  const [galleryPreview, setGalleryPreview] = useState<MediaItem[]>([]);
+  const [feedbacks, setFeedbacks] = useState<Feedback[]>([]);
+  const [selectedItem, setSelectedItem] = useState<MediaItem | null>(null);
 
   const featuredServices = useMemo<Service[]>(
     () => seedServices.filter(s => ['s1', 's2', 's3', 's4'].includes(s.id)),
@@ -107,46 +144,63 @@ export default function HomeScreen() {
 
   const memoOffers = useMemo<Offer[]>(() => offers, []);
 
-  /* -------------------- SCROLL HANDLERS -------------------- */
+  useEffect(() => {
+    const loadData = async () => {
+      const [gallery, reviews] = await Promise.all([
+        fetchpreviousWorkMedia(),
+        fetchFeedbacks(),
+      ]);
 
-  const handleReviewScroll = useCallback((e: NativeSyntheticEvent<NativeScrollEvent>) => {
-    const index = Math.round(e.nativeEvent.contentOffset.x / REVIEW_CARD_WIDTH);
-    setReviewIndex(index);
+      setGalleryPreview(gallery.slice(0, 5));
+      setFeedbacks(reviews);
+    };
+
+    loadData();
   }, []);
 
-  const handleServiceScroll = useCallback((e: NativeSyntheticEvent<NativeScrollEvent>) => {
-    const index = Math.round(e.nativeEvent.contentOffset.x / SERVICE_CARD_WIDTH);
-    setServiceIndex(index);
-  }, []);
+  const createScrollHandler = (itemWidth: number, setIndex: Function) =>
+    (e: NativeSyntheticEvent<NativeScrollEvent>) => {
+      const index = Math.round(e.nativeEvent.contentOffset.x / itemWidth);
+      setIndex(index);
+    };
 
-  const handleOfferScroll = useCallback((e: NativeSyntheticEvent<NativeScrollEvent>) => {
-    const index = Math.round(e.nativeEvent.contentOffset.x / OFFER_CARD_WIDTH);
-    setOfferIndex(index);
-  }, []);
+  const handleOfferScroll = useCallback(
+    createScrollHandler(OFFER_CARD_WIDTH, setOfferIndex),
+    [],
+  );
 
-  /* -------------------- UI -------------------- */
+  const handleServiceScroll = useCallback(
+    createScrollHandler(SERVICE_CARD_WIDTH, setServiceIndex),
+    [],
+  );
+
+  const handleReviewScroll = useCallback(
+    createScrollHandler(REVIEW_CARD_WIDTH, setReviewIndex),
+    [],
+  );
+
+  const handleGalleryScroll = useCallback(
+    createScrollHandler(width, setGalleryIndex),
+    [],
+  );
 
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
       <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-        {/* HERO */}
         <HeroHeader logo={logo} studio={ownerDetails.studio} />
 
         {/* OFFERS */}
         <SectionHeader title="Exclusive Offers" />
 
-        <ScrollView
-          horizontal
-          pagingEnabled
-          showsHorizontalScrollIndicator={false}
-          onScroll={handleOfferScroll}
-          scrollEventThrottle={16}
-        >
+        <ScrollView horizontal pagingEnabled showsHorizontalScrollIndicator={false}
+          onScroll={handleOfferScroll} scrollEventThrottle={16}>
           {memoOffers.map(offer => (
             <OfferCard
               key={offer.id}
               offer={offer}
-              onPress={() => navigation.navigate('OfferDetails', { id: offer.id })}
+              onPress={() =>
+                navigation.navigate('OfferDetails', { id: offer.id })
+              }
             />
           ))}
         </ScrollView>
@@ -168,20 +222,22 @@ export default function HomeScreen() {
           showsHorizontalScrollIndicator={false}
           renderItem={({ item, index }) => {
             if (index % 2 !== 0) return null;
-
             const second = featuredServices[index + 1];
 
             return (
               <View style={styles.servicePage}>
                 <ServiceCard
                   service={item}
-                  onPress={() => navigation.navigate('ServiceDetail', { id: item.id })}
+                  onPress={() =>
+                    navigation.navigate('ServiceDetail', { id: item.id })
+                  }
                 />
-
                 {second && (
                   <ServiceCard
                     service={second}
-                    onPress={() => navigation.navigate('ServiceDetail', { id: second.id })}
+                    onPress={() =>
+                      navigation.navigate('ServiceDetail', { id: second.id })
+                    }
                   />
                 )}
               </View>
@@ -193,36 +249,39 @@ export default function HomeScreen() {
 
         <CarouselDots count={featuredServices.length} active={serviceIndex} />
 
-        {/* OWNER */}
-        <View style={styles.ownerCard}>
-          <Image source={{ uri: ownerDetails.photo }} style={styles.ownerImage} />
-          <View style={styles.ownerText}>
-            <Text style={styles.ownerName}>{ownerDetails.name}</Text>
-            <Text style={styles.ownerBio}>{ownerDetails.bio}</Text>
-          </View>
-        </View>
+        {/* GALLERY */}
+        <SectionHeader
+          title="Our Work"
+          actionLabel="View all"
+          onActionPress={() => navigation.navigate('Gallery')}
+        />
 
-        {/* LOCATION */}
-        <View style={styles.infoCard}>
-          <TouchableOpacity onPress={openMaps}>
-            <MapCard image={locationImg} />
-          </TouchableOpacity>
+        <ScrollView horizontal pagingEnabled showsHorizontalScrollIndicator={false}
+          onScroll={handleGalleryScroll} scrollEventThrottle={16}>
+          {galleryPreview.map(item => (
+            <TouchableOpacity
+              key={item.id}
+              style={styles.galleryItem}
+              onPress={() => setSelectedItem(item)}
+            >
+              {item.type === 'image' ? (
+                <Image source={{ uri: item.url }} style={styles.galleryImage} />
+              ) : (
+                <View style={[styles.galleryImage, styles.videoPlaceholder]}>
+                  <Text style={styles.videoText}>🎬 Video</Text>
+                </View>
+              )}
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
 
-          <InfoRow icon="call-outline" text={ownerDetails.phone} />
-          <InfoRow icon="logo-whatsapp" text="Chat on WhatsApp" />
-          <InfoRow icon="logo-instagram" text="Instagram Profile" />
-        </View>
+        <CarouselDots count={galleryPreview.length} active={galleryIndex} />
 
         {/* REVIEWS */}
         <SectionHeader title="Customer Reviews" />
 
-        <ScrollView
-          horizontal
-          pagingEnabled
-          showsHorizontalScrollIndicator={false}
-          onScroll={handleReviewScroll}
-          scrollEventThrottle={16}
-        >
+        <ScrollView horizontal pagingEnabled showsHorizontalScrollIndicator={false}
+          onScroll={handleReviewScroll} scrollEventThrottle={16}>
           {feedbacks.map(f => (
             <View key={f.id} style={styles.feedbackCard}>
               <Text style={styles.feedbackText}>{f.text}</Text>
@@ -238,62 +297,78 @@ export default function HomeScreen() {
           <Text style={styles.bookingTitle}>Ready to Glow?</Text>
           <TouchableOpacity
             style={styles.bookingBtn}
-            onPress={() => navigation.navigate('Booking')}
-          >
+            onPress={() => navigation.navigate('Booking')}>
             <Text style={styles.bookingBtnText}>Book Now</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>
+
+      {/* FULLSCREEN VIEWER */}
+      <Modal visible={!!selectedItem} transparent animationType="fade">
+        <View style={styles.modalContainer}>
+          <StatusBar barStyle="light-content" />
+
+          <TouchableOpacity
+            style={styles.closeBtn}
+            onPress={() => setSelectedItem(null)}
+          >
+            <Text style={styles.closeText}>✕</Text>
+          </TouchableOpacity>
+
+          {selectedItem?.type === 'image' ? (
+            <Image
+              source={{ uri: selectedItem.url }}
+              style={styles.fullscreenImage}
+              resizeMode="contain"
+            />
+          ) : (
+            <View style={styles.fullscreenVideo}>
+              <Text style={styles.videoText}>🎬 Video Player</Text>
+            </View>
+          )}
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }
 
-/* -------------------- COMPONENTS -------------------- */
-
-const SectionHeader = React.memo(
-  ({
-    title,
-    actionLabel,
-    onActionPress,
-  }: {
-    title: string;
-    actionLabel?: string;
-    onActionPress?: () => void;
-  }) => (
-    <View style={styles.sectionHeaderRow}>
-      <Text style={styles.sectionTitle}>{title}</Text>
-      {actionLabel && onActionPress && (
-        <TouchableOpacity onPress={onActionPress}>
-          <Text style={styles.seeAll}>{actionLabel}</Text>
-        </TouchableOpacity>
-      )}
-    </View>
-  ),
-);
-
-SectionHeader.displayName = 'SectionHeader';
-
 /* -------------------- STYLES -------------------- */
 
 const styles = StyleSheet.create({
-  bookingBtn: {
-    backgroundColor: colors.primary,
-    borderRadius: 24,
-    paddingHorizontal: 24,
-    paddingVertical: 10,
-  },
-
-  bookingBtnText: { color: colors.white, fontWeight: '600' },
-  bookingCard: {
-    alignItems: 'center',
-    backgroundColor: colors.backgroundSoft,
-    borderRadius: 16,
-    margin: 16,
-    padding: 20,
-  },
-
-  bookingTitle: { fontFamily: 'RalewayBold', fontSize: 20, marginBottom: 10 },
   container: { flex: 1 },
+  safe: { backgroundColor: colors.backgroundSoft, flex: 1 },
+
+  sectionHeaderRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    marginTop: 10,
+  },
+
+  sectionTitle: { fontFamily: 'RalewayBold', fontSize: 18 },
+  seeAll: { color: colors.primary },
+
+  servicePage: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingHorizontal: 8,
+    width,
+  },
+
+  galleryItem: { width, paddingHorizontal: 16 },
+
+  galleryImage: {
+    width: '100%',
+    height: 220,
+    borderRadius: 20,
+    backgroundColor: colors.placeholder,
+  },
+
+  videoPlaceholder: { justifyContent: 'center', alignItems: 'center' },
+
+  videoText: { fontSize: 16, fontWeight: '600', color: colors.text },
+
   feedbackCard: {
     backgroundColor: colors.backgroundSoft,
     borderRadius: 14,
@@ -302,43 +377,63 @@ const styles = StyleSheet.create({
     width: REVIEW_CARD_WIDTH,
   },
 
-  feedbackName: { color: colors.primary, fontWeight: '600' },
   feedbackText: { color: colors.subdued },
-  infoCard: {
-    backgroundColor: colors.white,
-    borderRadius: 16,
-    elevation: 4,
-    margin: 16,
-    padding: 16,
-  },
-  ownerBio: { color: colors.text, fontSize: 13 },
-  ownerCard: {
+  feedbackName: { color: colors.primary, fontWeight: '600' },
+
+  bookingCard: {
+    alignItems: 'center',
     backgroundColor: colors.backgroundSoft,
     borderRadius: 16,
-    flexDirection: 'row',
-    gap: 12,
     margin: 16,
-    padding: 16,
+    padding: 20,
   },
 
-  ownerImage: { borderRadius: 40, height: 80, width: 80 },
+  bookingTitle: {
+    fontFamily: 'RalewayBold',
+    fontSize: 20,
+    marginBottom: 10,
+  },
 
-  ownerName: { fontFamily: 'RalewayBold', fontSize: 18 },
-  ownerText: { flex: 1 },
-  safe: { backgroundColor: colors.backgroundSoft, flex: 1 },
-  sectionHeaderRow: {
+  bookingBtn: {
+    backgroundColor: colors.primary,
+    borderRadius: 24,
+    paddingHorizontal: 24,
+    paddingVertical: 10,
+  },
+
+  bookingBtnText: { color: colors.white, fontWeight: '600' },
+
+  /* MODAL */
+
+  modalContainer: {
+    flex: 1,
+    backgroundColor: 'black',
+    justifyContent: 'center',
     alignItems: 'center',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginTop: 10,
-    paddingHorizontal: 16,
   },
-  sectionTitle: { fontFamily: 'RalewayBold', fontSize: 18 },
-  seeAll: { color: colors.primary },
-  servicePage: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingHorizontal: 8,
-    width,
+
+  fullscreenImage: {
+    width: '100%',
+    height: '100%',
+  },
+
+  fullscreenVideo: {
+    width: '100%',
+    height: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+
+  closeBtn: {
+    position: 'absolute',
+    top: 40,
+    right: 20,
+    zIndex: 10,
+  },
+
+  closeText: {
+    color: 'white',
+    fontSize: 28,
+    fontWeight: 'bold',
   },
 });

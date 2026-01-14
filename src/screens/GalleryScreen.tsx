@@ -1,6 +1,14 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { View, Text, FlatList, Image, StyleSheet } from 'react-native';
-import { Card } from 'react-native-paper';
+import {
+  View,
+  Text,
+  FlatList,
+  Image,
+  StyleSheet,
+  TouchableOpacity,
+  Modal,
+  StatusBar,
+} from 'react-native';
 
 import { colors } from '../theme';
 import { fetchpreviousWorkMedia } from '../mock/api';
@@ -11,21 +19,25 @@ type MediaItem = {
   url: string;
 };
 
-/* ---------------- CARD COMPONENT ---------------- */
+/* ---------------- CARD ---------------- */
 
-const GalleryCard = ({ item }: { item: MediaItem }) => {
+const GalleryCard = ({
+  item,
+  onPress,
+}: {
+  item: MediaItem;
+  onPress: () => void;
+}) => {
   return (
-    <Card style={styles.card}>
-      <View style={styles.inner}>
-        {item.type === 'image' ? (
-          <Image source={{ uri: item.url }} style={styles.media} />
-        ) : (
-          <View style={[styles.media, styles.videoPlaceholder]}>
-            <Text style={styles.videoText}>🎬 Video</Text>
-          </View>
-        )}
-      </View>
-    </Card>
+    <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.85}>
+      {item.type === 'image' ? (
+        <Image source={{ uri: item.url }} style={styles.media} />
+      ) : (
+        <View style={[styles.media, styles.videoPlaceholder]}>
+          <Text style={styles.videoText}>🎬 Video</Text>
+        </View>
+      )}
+    </TouchableOpacity>
   );
 };
 
@@ -33,6 +45,7 @@ const GalleryCard = ({ item }: { item: MediaItem }) => {
 
 export default function GalleryScreen() {
   const [media, setMedia] = useState<MediaItem[]>([]);
+  const [selectedItem, setSelectedItem] = useState<MediaItem | null>(null);
 
   useEffect(() => {
     const loadMedia = async () => {
@@ -43,12 +56,16 @@ export default function GalleryScreen() {
   }, []);
 
   const renderItem = useCallback(
-    ({ item }: { item: MediaItem }) => <GalleryCard item={item} />,
+    ({ item }: { item: MediaItem }) => (
+      <GalleryCard item={item} onPress={() => setSelectedItem(item)} />
+    ),
     []
   );
 
   return (
     <View style={styles.container}>
+      <StatusBar barStyle="dark-content" />
+
       <FlatList
         data={media}
         keyExtractor={item => item.id}
@@ -57,6 +74,37 @@ export default function GalleryScreen() {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.list}
       />
+
+      {/* FULLSCREEN VIEWER */}
+      <Modal
+        visible={!!selectedItem}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setSelectedItem(null)}
+      >
+        <View style={styles.modalContainer}>
+          <StatusBar barStyle="light-content" />
+
+          <TouchableOpacity
+            style={styles.closeBtn}
+            onPress={() => setSelectedItem(null)}
+          >
+            <Text style={styles.closeText}>✕</Text>
+          </TouchableOpacity>
+
+          {selectedItem?.type === 'image' ? (
+            <Image
+              source={{ uri: selectedItem.url }}
+              style={styles.fullscreenImage}
+              resizeMode="contain"
+            />
+          ) : (
+            <View style={styles.fullscreenVideo}>
+              <Text style={styles.videoText}>🎬 Video Player</Text>
+            </View>
+          )}
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -70,37 +118,66 @@ const styles = StyleSheet.create({
   },
 
   list: {
-    paddingBottom: 16,
-    paddingHorizontal: 8,
+    padding: 8,
   },
 
   card: {
-    backgroundColor: colors.white,
-    borderRadius: 16,
-    elevation: 4,
     flex: 1,
     margin: 8,
-  },
-
-  inner: {
     borderRadius: 16,
     overflow: 'hidden',
+    backgroundColor: colors.placeholder,
+    elevation: 3,
   },
 
   media: {
-    backgroundColor: colors.placeholder,
     height: 180,
     width: '100%',
   },
 
   videoPlaceholder: {
-    alignItems: 'center',
     justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: colors.placeholder,
   },
 
   videoText: {
     color: colors.text,
     fontSize: 16,
     fontWeight: '600',
+  },
+
+  /* MODAL */
+
+  modalContainer: {
+    flex: 1,
+    backgroundColor: 'black',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+
+  fullscreenImage: {
+    width: '100%',
+    height: '100%',
+  },
+
+  fullscreenVideo: {
+    width: '100%',
+    height: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+
+  closeBtn: {
+    position: 'absolute',
+    top: 40,
+    right: 20,
+    zIndex: 10,
+  },
+
+  closeText: {
+    color: 'white',
+    fontSize: 28,
+    fontWeight: 'bold',
   },
 });

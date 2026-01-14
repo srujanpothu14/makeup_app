@@ -30,3 +30,8 @@ export type Media = {
   type: 'image' | 'video';
   url: string;
 };
+export type Feedback = {
+  id: string;
+  name: string;
+  text: string;
+};

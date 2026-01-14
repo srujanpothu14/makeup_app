@@ -1,4 +1,4 @@
-import { Service, User, Booking, Media } from "../types";
+import { Service, User, Booking, Media, Feedback } from "../types";
 
 export const seedUsers: User[] = [
   {
@@ -108,6 +108,11 @@ export const mockMedia: Media[] = [
     type: "video",
     url: "https://sample-videos.com/video123/mp4/720/big_buck_bunny_720p_1mb.mp4",
   },
+];
+export const feedbacks: Feedback[] = [
+  { id: "f1", name: "Aishwarya", text: "Absolutely loved my bridal makeup!" },
+  { id: "f2", name: "Sneha", text: "Great service, very friendly artist." },
+  { id: "f3", name: "Pooja", text: "Best makeup studio in Hyderabad!" },
 ];
 
 export const initialBookings: Booking[] = [];
