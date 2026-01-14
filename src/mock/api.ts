@@ -1,6 +1,6 @@
-import { Booking, Service, User } from '../types';
+import { Booking, Service, User, Media } from '../types';
 
-import { seedUsers, seedServices } from './data';
+import { seedUsers, seedServices, mockMedia } from './data';
 import {
   getBookings,
   setBookings,
@@ -46,6 +46,10 @@ export async function fetchServices(): Promise<Service[]> {
   return seedServices;
 }
 
+export async function fetchpreviousWorkMedia(): Promise<Media[]> {
+  await delay(200);
+  return mockMedia;
+}
 export async function fetchService(id: string): Promise<Service> {
   await delay(200);
   const s = seedServices.find(x => x.id === id);

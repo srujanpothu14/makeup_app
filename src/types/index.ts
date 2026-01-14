@@ -24,3 +24,9 @@ export type User = {
   password?: string;
   avatarUrl?: string;
 };
+
+export type Media = {
+  id: string;
+  type: 'image' | 'video';
+  url: string;
+};

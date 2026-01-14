@@ -1,41 +1,56 @@
-import React from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { View, Text, FlatList, Image, StyleSheet } from 'react-native';
 import { Card } from 'react-native-paper';
 
 import { colors } from '../theme';
+import { fetchpreviousWorkMedia } from '../mock/api';
 
-const mockMedia = [
-  { id: '1', type: 'image', uri: 'https://picsum.photos/seed/hair/400' },
-  { id: '2', type: 'image', uri: 'https://picsum.photos/seed/hair/401' },
-  {
-    id: '3',
-    type: 'video',
-    uri: 'https://sample-videos.com/video123/mp4/720/big_buck_bunny_720p_1mb.mp4',
-  },
-];
+type MediaItem = {
+  id: string;
+  type: 'image' | 'video';
+  url: string;
+};
+
+/* ---------------- CARD COMPONENT ---------------- */
+
+const GalleryCard = ({ item }: { item: MediaItem }) => {
+  return (
+    <Card style={styles.card}>
+      <View style={styles.inner}>
+        {item.type === 'image' ? (
+          <Image source={{ uri: item.url }} style={styles.media} />
+        ) : (
+          <View style={[styles.media, styles.videoPlaceholder]}>
+            <Text style={styles.videoText}>🎬 Video</Text>
+          </View>
+        )}
+      </View>
+    </Card>
+  );
+};
+
+/* ---------------- SCREEN ---------------- */
 
 export default function GalleryScreen() {
-  const renderItem = ({ item }: { item: (typeof mockMedia)[0] }) => {
-    return (
-      <Card style={styles.card}>
-        {/* CLIPPING CONTAINER (same pattern as ServiceCard) */}
-        <View style={styles.inner}>
-          {item.type === 'image' ? (
-            <Image source={{ uri: item.uri }} style={styles.media} />
-          ) : (
-            <View style={[styles.media, styles.videoPlaceholder]}>
-              <Text style={styles.videoText}>Video</Text>
-            </View>
-          )}
-        </View>
-      </Card>
-    );
-  };
+  const [media, setMedia] = useState<MediaItem[]>([]);
+
+  useEffect(() => {
+    const loadMedia = async () => {
+      const data = await fetchpreviousWorkMedia();
+      setMedia(data);
+    };
+    loadMedia();
+  }, []);
+
+  const renderItem = useCallback(
+    ({ item }: { item: MediaItem }) => <GalleryCard item={item} />,
+    []
+  );
 
   return (
     <View style={styles.container}>
       <FlatList
-        data={mockMedia}
+        data={media}
         keyExtractor={item => item.id}
         renderItem={renderItem}
         numColumns={2}
@@ -45,7 +60,20 @@ export default function GalleryScreen() {
     </View>
   );
 }
+
+/* ---------------- STYLES ---------------- */
+
 const styles = StyleSheet.create({
+  container: {
+    backgroundColor: colors.white,
+    flex: 1,
+  },
+
+  list: {
+    paddingBottom: 16,
+    paddingHorizontal: 8,
+  },
+
   card: {
     backgroundColor: colors.white,
     borderRadius: 16,
@@ -53,22 +81,15 @@ const styles = StyleSheet.create({
     flex: 1,
     margin: 8,
   },
-  container: {
-    backgroundColor: colors.white,
-    flex: 1,
-  },
+
   inner: {
     borderRadius: 16,
-    overflow: 'hidden', // avoids shadow warning
+    overflow: 'hidden',
   },
-  list: {
-    paddingBottom: 16,
-    paddingHorizontal: 8,
-  },
-  /* Taller portrait-style media */
+
   media: {
     backgroundColor: colors.placeholder,
-    height: 180, // same feel as ServiceCard image
+    height: 180,
     width: '100%',
   },
 
