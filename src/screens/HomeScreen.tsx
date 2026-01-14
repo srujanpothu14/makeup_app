@@ -398,18 +398,19 @@ const styles = StyleSheet.create({
     width,
     flexDirection: 'row',
     justifyContent: 'space-between',
-    paddingHorizontal: 12,
+    paddingHorizontal: 16,
+    marginVertical: 8,
   },
 
   galleryGridItem: {
-    width: (width - 40) / 2,
+    width: (width - 48) / 2,
     borderRadius: 16,
     overflow: 'hidden',
   },
 
   galleryImage: {
     width: '100%',
-    height: 180,
+    height: 280,
     borderRadius: 16,
     backgroundColor: colors.placeholder,
   },
