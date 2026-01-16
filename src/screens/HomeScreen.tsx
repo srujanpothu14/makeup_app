@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback, useEffect } from "react";
+import React, { useState, useMemo, useCallback, useEffect,useRef  } from "react";
 import {
   View,
   Text,
@@ -112,7 +112,17 @@ const SectionHeader = ({
 /* -------------------- SCREEN -------------------- */
 
 export default function HomeScreen() {
-  const navigation = useNavigation<NavigationProp<RootStackParamList>>();
+const navigation = useNavigation<any>();
+  const scrollRef = useRef<ScrollView>(null);
+
+useEffect(() => {
+  const unsubscribe = navigation.addListener("tabPress", () => {
+    scrollRef.current?.scrollTo({ y: 0, animated: true });
+  });
+
+  return unsubscribe;
+}, [navigation]);
+
 
   const [reviewIndex, setReviewIndex] = useState(0);
   const [serviceIndex, setServiceIndex] = useState(0);
@@ -173,7 +183,11 @@ export default function HomeScreen() {
 
   return (
     <SafeAreaView style={styles.safe} edges={["top"]}>
-      <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+<ScrollView
+  ref={scrollRef}
+  style={styles.container}
+  showsVerticalScrollIndicator={false}
+>
         <HeroHeader logo={logo} studio={ownerDetails.studio} />
 
         {/* OFFERS */}

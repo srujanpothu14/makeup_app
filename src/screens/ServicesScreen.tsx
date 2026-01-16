@@ -1,11 +1,15 @@
-import React, { useMemo, useState, useCallback } from "react";
+import React, {
+  useMemo,
+  useState,
+  useCallback,
+  useRef,
+  useEffect,
+} from "react";
 import { View, TextInput, StyleSheet, TouchableOpacity } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useQuery } from "@tanstack/react-query";
 import { FlashList } from "@shopify/flash-list";
 import { useNavigation } from "@react-navigation/native";
-import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
-
 import { fetchServices } from "../mock/api";
 import ServiceCard from "../components/ServiceCard";
 import { colors } from "../theme";
@@ -21,19 +25,19 @@ type Service = {
   price: number;
 };
 
-type RootStackParamList = {
-  ServiceDetail: { id: string };
-};
-
-type NavigationProp = NativeStackNavigationProp<
-  RootStackParamList,
-  "ServiceDetail"
->;
-
 /* -------------------- SCREEN -------------------- */
 
 export default function ServicesScreen() {
-  const navigation = useNavigation<NavigationProp>();
+  const navigation = useNavigation<any>();
+  const listRef = useRef<any>(null);
+  useEffect(() => {
+    const unsubscribe = navigation.addListener("tabPress", () => {
+      listRef.current?.scrollToOffset({ offset: 0, animated: true });
+    });
+
+    return unsubscribe;
+  }, [navigation]);
+
   const [search, setSearch] = useState("");
 
   const { data = [], isLoading } = useQuery<Service[]>({
@@ -87,6 +91,7 @@ export default function ServicesScreen() {
       {/* Services Grid */}
       {!isLoading && (
         <FlashList
+          ref={listRef}
           data={filteredData}
           numColumns={2}
           keyExtractor={(item) => item.id}

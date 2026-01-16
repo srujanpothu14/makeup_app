@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState, useRef } from "react";
 import {
   View,
   Text,
@@ -8,14 +8,15 @@ import {
   TouchableOpacity,
   Modal,
   StatusBar,
-} from 'react-native';
+} from "react-native";
+import { useNavigation } from "@react-navigation/native";
 
-import { colors } from '../theme';
-import { fetchpreviousWorkMedia } from '../mock/api';
+import { colors } from "../theme";
+import { fetchpreviousWorkMedia } from "../mock/api";
 
 type MediaItem = {
   id: string;
-  type: 'image' | 'video';
+  type: "image" | "video";
   url: string;
 };
 
@@ -29,8 +30,12 @@ const GalleryCard = ({
   onPress: () => void;
 }) => {
   return (
-    <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.85}>
-      {item.type === 'image' ? (
+    <TouchableOpacity
+      style={styles.card}
+      onPress={onPress}
+      activeOpacity={0.85}
+    >
+      {item.type === "image" ? (
         <Image source={{ uri: item.url }} style={styles.media} />
       ) : (
         <View style={[styles.media, styles.videoPlaceholder]}>
@@ -44,6 +49,17 @@ const GalleryCard = ({
 /* ---------------- SCREEN ---------------- */
 
 export default function GalleryScreen() {
+  const navigation = useNavigation<any>();
+  const listRef = useRef<any>(null);
+
+  useEffect(() => {
+    const unsubscribe = navigation.addListener("tabPress", () => {
+      listRef.current?.scrollToOffset({ offset: 0, animated: true });
+    });
+
+    return unsubscribe;
+  }, [navigation]);
+
   const [media, setMedia] = useState<MediaItem[]>([]);
   const [selectedItem, setSelectedItem] = useState<MediaItem | null>(null);
 
@@ -67,8 +83,9 @@ export default function GalleryScreen() {
       <StatusBar barStyle="dark-content" />
 
       <FlatList
+        ref={listRef}
         data={media}
-        keyExtractor={item => item.id}
+        keyExtractor={(item) => item.id}
         renderItem={renderItem}
         numColumns={2}
         showsVerticalScrollIndicator={false}
@@ -92,7 +109,7 @@ export default function GalleryScreen() {
             <Text style={styles.closeText}>✕</Text>
           </TouchableOpacity>
 
-          {selectedItem?.type === 'image' ? (
+          {selectedItem?.type === "image" ? (
             <Image
               source={{ uri: selectedItem.url }}
               style={styles.fullscreenImage}
@@ -125,59 +142,59 @@ const styles = StyleSheet.create({
     flex: 1,
     margin: 8,
     borderRadius: 16,
-    overflow: 'hidden',
+    overflow: "hidden",
     backgroundColor: colors.placeholder,
     elevation: 3,
   },
 
   media: {
     height: 180,
-    width: '100%',
+    width: "100%",
   },
 
   videoPlaceholder: {
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     backgroundColor: colors.placeholder,
   },
 
   videoText: {
     color: colors.text,
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: "600",
   },
 
   /* MODAL */
 
   modalContainer: {
     flex: 1,
-    backgroundColor: 'black',
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: "black",
+    justifyContent: "center",
+    alignItems: "center",
   },
 
   fullscreenImage: {
-    width: '100%',
-    height: '100%',
+    width: "100%",
+    height: "100%",
   },
 
   fullscreenVideo: {
-    width: '100%',
-    height: '100%',
-    justifyContent: 'center',
-    alignItems: 'center',
+    width: "100%",
+    height: "100%",
+    justifyContent: "center",
+    alignItems: "center",
   },
 
   closeBtn: {
-    position: 'absolute',
+    position: "absolute",
     top: 40,
     right: 20,
     zIndex: 10,
   },
 
   closeText: {
-    color: 'white',
+    color: "white",
     fontSize: 28,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
 });

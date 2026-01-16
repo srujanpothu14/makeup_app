@@ -103,8 +103,14 @@ export const offers = [
 export const mockMedia: Media[] = [
   { id: "1", type: "image", url: "https://picsum.photos/seed/hair/400" },
   { id: "2", type: "image", url: "https://picsum.photos/seed/hair/401" },
+  { id: "3", type: "image", url: "https://picsum.photos/seed/hair/401" },
+  { id: "4", type: "image", url: "https://picsum.photos/seed/hair/401" },
+  { id: "5", type: "image", url: "https://picsum.photos/seed/hair/401" },
+  { id: "6", type: "image", url: "https://picsum.photos/seed/hair/401" },
+  { id: "7", type: "image", url: "https://picsum.photos/seed/hair/401" },
+  { id: "8", type: "image", url: "https://picsum.photos/seed/hair/401" },
   {
-    id: "3",
+    id: "9",
     type: "video",
     url: "https://sample-videos.com/video123/mp4/720/big_buck_bunny_720p_1mb.mp4",
   },
