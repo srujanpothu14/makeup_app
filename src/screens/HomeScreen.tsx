@@ -1,4 +1,10 @@
-import React, { useState, useMemo, useCallback, useEffect,useRef  } from "react";
+import React, {
+  useState,
+  useMemo,
+  useCallback,
+  useEffect,
+  useRef,
+} from "react";
 import {
   View,
   Text,
@@ -6,7 +12,6 @@ import {
   TouchableOpacity,
   Linking,
   ScrollView,
-  Platform,
   Image,
   Dimensions,
   NativeSyntheticEvent,
@@ -16,8 +21,9 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { FlashList } from "@shopify/flash-list";
-import { useNavigation, NavigationProp } from "@react-navigation/native";
+import { useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
+
 import ServiceCard from "../components/ServiceCard";
 import OfferCard from "../components/OfferCard";
 import CarouselDots from "../components/CarouselDots";
@@ -28,22 +34,10 @@ import { colors } from "../theme";
 import logo from "../assets/manasa_logo.png";
 import locationImg from "../assets/location.png";
 
-/* -------------------- CONSTANTS -------------------- */
-
 const { width } = Dimensions.get("window");
 const OFFER_CARD_WIDTH = width - 32;
-const REVIEW_CARD_WIDTH = 220;
-const SERVICE_CARD_WIDTH = (width - 48) / 2;
 
 /* -------------------- TYPES -------------------- */
-
-type RootStackParamList = {
-  ServiceDetail: { id: string };
-  OfferDetails: { id: string };
-  Services: undefined;
-  Booking: undefined;
-  Gallery: undefined;
-};
 
 type Service = {
   id: string;
@@ -83,7 +77,7 @@ const ownerDetails = {
   instagram:
     "https://www.instagram.com/manasa_makeovers_korutla?igsh=enR0ZGI4MHl3a25l",
   whatsapp: "https://wa.me/919642166712?text=Hi",
-  bio: "Certified professional makeup artist with 6+ years of experience in bridal, party, and fashion makeup.",
+  bio: "Certified professional makeup artist with 6+ years of experience.",
   facebook: "https://www.facebook.com/share/1b1vQoV78G/?mibextid=wwXIfr",
   photo: "https://maps.app.goo.gl/TJ7cExHcMTJmixDc9",
 };
@@ -112,22 +106,20 @@ const SectionHeader = ({
 /* -------------------- SCREEN -------------------- */
 
 export default function HomeScreen() {
-const navigation = useNavigation<any>();
+  const navigation = useNavigation<any>();
   const scrollRef = useRef<ScrollView>(null);
 
-useEffect(() => {
-  const unsubscribe = navigation.addListener("tabPress", () => {
-    scrollRef.current?.scrollTo({ y: 0, animated: true });
-  });
+  useEffect(() => {
+    const unsubscribe = navigation.addListener("tabPress", () => {
+      scrollRef.current?.scrollTo({ y: 0, animated: true });
+    });
+    return unsubscribe;
+  }, [navigation]);
 
-  return unsubscribe;
-}, [navigation]);
-
-
-  const [reviewIndex, setReviewIndex] = useState(0);
-  const [serviceIndex, setServiceIndex] = useState(0);
   const [offerIndex, setOfferIndex] = useState(0);
+  const [serviceIndex, setServiceIndex] = useState(0);
   const [galleryIndex, setGalleryIndex] = useState(0);
+  const [reviewIndex, setReviewIndex] = useState(0);
 
   const [galleryPreview, setGalleryPreview] = useState<MediaItem[]>([]);
   const [feedbacks, setFeedbacks] = useState<Feedback[]>([]);
@@ -140,17 +132,19 @@ useEffect(() => {
 
   const memoOffers = useMemo<Offer[]>(() => offers, []);
 
+  const serviceSlides = Math.ceil(featuredServices.length / 2);
+  const gallerySlides = Math.ceil(galleryPreview.length / 2);
+  const reviewSlides = Math.ceil(feedbacks.length / 2);
+
   useEffect(() => {
     const loadData = async () => {
       const [gallery, reviews] = await Promise.all([
         fetchpreviousWorkMedia(),
         fetchFeedbacks(),
       ]);
-
-      setGalleryPreview(gallery.slice(0, 6)); // 6 so we get 3 pages of 2 items
+      setGalleryPreview(gallery.slice(0, 6));
       setFeedbacks(reviews);
     };
-
     loadData();
   }, []);
 
@@ -167,12 +161,7 @@ useEffect(() => {
   );
 
   const handleServiceScroll = useCallback(
-    createScrollHandler(SERVICE_CARD_WIDTH, setServiceIndex),
-    []
-  );
-
-  const handleReviewScroll = useCallback(
-    createScrollHandler(REVIEW_CARD_WIDTH, setReviewIndex),
+    createScrollHandler(width, setServiceIndex),
     []
   );
 
@@ -181,13 +170,14 @@ useEffect(() => {
     []
   );
 
+  const handleReviewScroll = useCallback(
+    createScrollHandler(width, setReviewIndex),
+    []
+  );
+
   return (
     <SafeAreaView style={styles.safe} edges={["top"]}>
-<ScrollView
-  ref={scrollRef}
-  style={styles.container}
-  showsVerticalScrollIndicator={false}
->
+      <ScrollView ref={scrollRef} style={styles.container}>
         <HeroHeader logo={logo} studio={ownerDetails.studio} />
 
         {/* OFFERS */}
@@ -220,24 +210,27 @@ useEffect(() => {
           onActionPress={() => navigation.navigate("Services")}
         />
 
-        <FlashList
-          data={featuredServices}
-          keyExtractor={(item) => item.id}
+        <ScrollView
           horizontal
           pagingEnabled
           showsHorizontalScrollIndicator={false}
-          renderItem={({ item, index }) => {
-            if (index % 2 !== 0) return null;
-            const second = featuredServices[index + 1];
+          onScroll={handleServiceScroll}
+          scrollEventThrottle={16}
+        >
+          {Array.from({ length: serviceSlides }).map((_, i) => {
+            const first = featuredServices[i * 2];
+            const second = featuredServices[i * 2 + 1];
 
             return (
-              <View style={styles.servicePage}>
-                <ServiceCard
-                  service={item}
-                  onPress={() =>
-                    navigation.navigate("ServiceDetail", { id: item.id })
-                  }
-                />
+              <View key={i} style={styles.servicePage}>
+                {first && (
+                  <ServiceCard
+                    service={first}
+                    onPress={() =>
+                      navigation.navigate("ServiceDetail", { id: first.id })
+                    }
+                  />
+                )}
                 {second && (
                   <ServiceCard
                     service={second}
@@ -248,14 +241,12 @@ useEffect(() => {
                 )}
               </View>
             );
-          }}
-          onScroll={handleServiceScroll}
-          scrollEventThrottle={16}
-        />
+          })}
+        </ScrollView>
 
-        <CarouselDots count={featuredServices.length} active={serviceIndex} />
+        <CarouselDots count={serviceSlides} active={serviceIndex} />
 
-        {/* GALLERY (2 PER VIEW) */}
+        {/* GALLERY */}
         <SectionHeader
           title="Our Work"
           actionLabel="View all"
@@ -269,49 +260,33 @@ useEffect(() => {
           onScroll={handleGalleryScroll}
           scrollEventThrottle={16}
         >
-          {Array.from({ length: Math.ceil(galleryPreview.length / 2) }).map(
-            (_, i) => {
-              const first = galleryPreview[i * 2];
-              const second = galleryPreview[i * 2 + 1];
+          {Array.from({ length: gallerySlides }).map((_, i) => {
+            const first = galleryPreview[i * 2];
+            const second = galleryPreview[i * 2 + 1];
 
-              return (
-                <View key={i} style={styles.galleryPage}>
-                  {[first, second].map(
-                    (item) =>
-                      item && (
-                        <TouchableOpacity
-                          key={item.id}
-                          style={styles.galleryGridItem}
-                          onPress={() => setSelectedItem(item)}
-                        >
-                          {item.type === "image" ? (
-                            <Image
-                              source={{ uri: item.url }}
-                              style={styles.galleryImage}
-                            />
-                          ) : (
-                            <View
-                              style={[
-                                styles.galleryImage,
-                                styles.videoPlaceholder,
-                              ]}
-                            >
-                              <Text style={styles.videoText}>🎬 Video</Text>
-                            </View>
-                          )}
-                        </TouchableOpacity>
-                      )
-                  )}
-                </View>
-              );
-            }
-          )}
+            return (
+              <View key={i} style={styles.galleryPage}>
+                {[first, second].map(
+                  (item) =>
+                    item && (
+                      <TouchableOpacity
+                        key={item.id}
+                        style={styles.galleryGridItem}
+                        onPress={() => setSelectedItem(item)}
+                      >
+                        <Image
+                          source={{ uri: item.url }}
+                          style={styles.galleryImage}
+                        />
+                      </TouchableOpacity>
+                    )
+                )}
+              </View>
+            );
+          })}
         </ScrollView>
 
-        <CarouselDots
-          count={Math.ceil(galleryPreview.length / 2)}
-          active={galleryIndex}
-        />
+        <CarouselDots count={gallerySlides} active={galleryIndex} />
 
         {/* REVIEWS */}
         <SectionHeader title="Customer Reviews" />
@@ -323,35 +298,29 @@ useEffect(() => {
           onScroll={handleReviewScroll}
           scrollEventThrottle={16}
         >
-          {Array.from({ length: Math.ceil(feedbacks.length / 2) }).map(
-            (_, i) => {
-              const first = feedbacks[i * 2];
-              const second = feedbacks[i * 2 + 1];
+          {Array.from({ length: reviewSlides }).map((_, i) => {
+            const first = feedbacks[i * 2];
+            const second = feedbacks[i * 2 + 1];
 
-              return (
-                <View key={i} style={styles.galleryPage}>
-                  {[first, second].map(
-                    (f) =>
-                      f && (
-                        <View key={f.id} style={styles.feedbackCard}>
-                          <Text style={styles.feedbackText}>{f.text}</Text>
-
-                          <View style={styles.feedbackFooter}>
-                            <Text style={styles.feedbackName}>– {f.name}</Text>
-                          </View>
-                        </View>
-                      )
-                  )}
-                </View>
-              );
-            }
-          )}
+            return (
+              <View key={i} style={styles.reviewPage}>
+                {[first, second].map(
+                  (f) =>
+                    f && (
+                      <View key={f.id} style={styles.feedbackCard}>
+                        <Text style={styles.feedbackText}>{f.text}</Text>
+                        <Text style={styles.feedbackName}>– {f.name}</Text>
+                      </View>
+                    )
+                )}
+              </View>
+            );
+          })}
         </ScrollView>
 
-        <CarouselDots
-          count={Math.ceil(feedbacks.length / 2)}
-          active={reviewIndex}
-        />
+        <CarouselDots count={reviewSlides} active={reviewIndex} />
+
+        {/* ABOUT + CTA */}
         <SectionHeader title="Why Choose Us" />
 
         <View style={styles.whyChooseGrid}>
@@ -368,7 +337,6 @@ useEffect(() => {
           ))}
         </View>
 
-        {/* CTA */}
         <View style={styles.bookingCard}>
           <Text style={styles.bookingTitle}>Ready to Glow?</Text>
           <TouchableOpacity
@@ -378,91 +346,11 @@ useEffect(() => {
             <Text style={styles.bookingBtnText}>Book Now</Text>
           </TouchableOpacity>
         </View>
-        <SectionHeader title="About Us" />
-        <View style={styles.artistCard}>
-          <Image
-            source={{ uri: ownerDetails.photo }}
-            style={styles.artistImage}
-          />
-
-          <View style={styles.artistInfo}>
-            <Text style={styles.artistName}>{ownerDetails.name}</Text>
-            <Text style={styles.artistStudio}>{ownerDetails.designation}</Text>
-            <Text style={styles.artistBio}>{ownerDetails.bio}</Text>
-          </View>
-        </View>
-        <View style={styles.socialCard}>
-          <TouchableOpacity
-            style={styles.socialIconBtn}
-            onPress={() => Linking.openURL(`tel:${ownerDetails.phone}`)}
-          >
-            <Ionicons name="call-outline" size={22} color={colors.primary} />
-            <Text style={styles.socialLabel}>Call</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={styles.socialIconBtn}
-            onPress={() => Linking.openURL(ownerDetails.whatsapp)}
-          >
-            <Ionicons name="logo-whatsapp" size={22} color={colors.primary} />
-            <Text style={styles.socialLabel}>WhatsApp</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={styles.socialIconBtn}
-            onPress={() => Linking.openURL(ownerDetails.instagram)}
-          >
-            <Ionicons name="logo-instagram" size={22} color={colors.primary} />
-            <Text style={styles.socialLabel}>Instagram</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={styles.socialIconBtn}
-            onPress={() => Linking.openURL(ownerDetails.facebook)}
-          >
-            <Ionicons name="logo-facebook" size={22} color={colors.primary} />
-            <Text style={styles.socialLabel}>Facebook</Text>
-          </TouchableOpacity>
-        </View>
-        <Text style={styles.aboutSubTitle}>Studio Details</Text>
-        <View style={styles.studioCard}>
-          <View style={styles.infoRow}>
-            <Ionicons
-              name="location-outline"
-              size={20}
-              color={colors.primary}
-            />
-            <Text style={styles.infoText}>{ownerDetails.location}</Text>
-          </View>
-
-          <View style={styles.infoRow}>
-            <Ionicons name="time-outline" size={20} color={colors.primary} />
-            <Text style={styles.infoText}>Mon – Sun | 9 AM – 8 PM</Text>
-          </View>
-
-          <View style={styles.infoRow}>
-            <Ionicons name="car-outline" size={20} color={colors.primary} />
-            <Text style={styles.infoText}>Parking Available</Text>
-          </View>
-          <TouchableOpacity
-            style={styles.mapPreviewCard}
-            onPress={() => Linking.openURL(ownerDetails.locationUrl)}
-          >
-            <Image source={locationImg} style={styles.mapImage} />
-
-            <View style={styles.mapOverlay}>
-              <Ionicons name="location-outline" size={18} color="white" />
-              <Text style={styles.mapOverlayText}>View on Map</Text>
-            </View>
-          </TouchableOpacity>
-        </View>
       </ScrollView>
 
-      {/* FULLSCREEN VIEWER */}
+      {/* FULLSCREEN IMAGE */}
       <Modal visible={!!selectedItem} transparent animationType="fade">
         <View style={styles.modalContainer}>
-          <StatusBar barStyle="light-content" />
-
           <TouchableOpacity
             style={styles.closeBtn}
             onPress={() => setSelectedItem(null)}
@@ -470,16 +358,12 @@ useEffect(() => {
             <Text style={styles.closeText}>✕</Text>
           </TouchableOpacity>
 
-          {selectedItem?.type === "image" ? (
+          {selectedItem && (
             <Image
               source={{ uri: selectedItem.url }}
               style={styles.fullscreenImage}
               resizeMode="contain"
             />
-          ) : (
-            <View style={styles.fullscreenVideo}>
-              <Text style={styles.videoText}>🎬 Video Player</Text>
-            </View>
           )}
         </View>
       </Modal>
@@ -505,10 +389,10 @@ const styles = StyleSheet.create({
   seeAll: { color: colors.primary },
 
   servicePage: {
+    width,
     flexDirection: "row",
     justifyContent: "space-between",
     paddingHorizontal: 8,
-    width,
   },
 
   galleryPage: {
@@ -517,6 +401,13 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     paddingHorizontal: 16,
     marginVertical: 8,
+  },
+
+  reviewPage: {
+    width,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    paddingHorizontal: 16,
   },
 
   galleryGridItem: {
@@ -529,39 +420,50 @@ const styles = StyleSheet.create({
     width: "100%",
     height: 280,
     borderRadius: 16,
-    backgroundColor: colors.placeholder,
-  },
-
-  videoPlaceholder: {
-    justifyContent: "center",
-    alignItems: "center",
-  },
-
-  videoText: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: colors.text,
   },
 
   feedbackCard: {
+    width: (width - 48) / 2,
     padding: 14,
-    height: 90,
-    width: SERVICE_CARD_WIDTH,
-    justifyContent: "space-between",
     backgroundColor: colors.primaryLight,
     borderRadius: 20,
     marginVertical: 8,
   },
 
   feedbackText: { color: colors.subdued },
-  feedbackFooter: {
-    alignItems: "flex-end",
-  },
 
   feedbackName: {
     color: colors.primary,
     fontWeight: "600",
     fontSize: 13,
+    textAlign: "right",
+  },
+
+  whyChooseGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "space-between",
+    paddingHorizontal: 16,
+    marginTop: 10,
+  },
+
+  whyChooseItem: {
+    width: "48%",
+    backgroundColor: colors.primaryLight,
+    borderRadius: 16,
+    padding: 16,
+    alignItems: "center",
+    marginBottom: 12,
+  },
+
+  whyIcon: {
+    fontSize: 28,
+    marginBottom: 6,
+  },
+
+  whyText: {
+    fontWeight: "600",
+    textAlign: "center",
   },
 
   bookingCard: {
@@ -599,13 +501,6 @@ const styles = StyleSheet.create({
     height: "100%",
   },
 
-  fullscreenVideo: {
-    width: "100%",
-    height: "100%",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-
   closeBtn: {
     position: "absolute",
     top: 40,
@@ -617,171 +512,5 @@ const styles = StyleSheet.create({
     color: "white",
     fontSize: 28,
     fontWeight: "bold",
-  },
-  whyChooseGrid: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    justifyContent: "space-between",
-    paddingHorizontal: 16,
-    marginTop: 10,
-  },
-
-  whyChooseItem: {
-    width: "48%",
-    backgroundColor: colors.primaryLight,
-    borderRadius: 16,
-    padding: 16,
-    alignItems: "center",
-    marginBottom: 12,
-  },
-
-  whyIcon: {
-    fontSize: 28,
-    marginBottom: 6,
-  },
-
-  whyText: {
-    fontWeight: "600",
-    textAlign: "center",
-  },
-
-  aboutSubTitle: {
-    fontSize: 16,
-    fontWeight: "700",
-    marginLeft: 16,
-  },
-
-  artistCard: {
-    flexDirection: "row",
-    backgroundColor: colors.white,
-    borderRadius: 20,
-    margin: 16,
-    padding: 16,
-    alignItems: "center",
-    elevation: 2,
-  },
-
-  artistImage: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    marginRight: 12,
-    backgroundColor: colors.placeholder,
-  },
-
-  artistInfo: {
-    flex: 1,
-  },
-
-  artistName: {
-    fontSize: 18,
-    fontWeight: "700",
-  },
-
-  artistStudio: {
-    color: colors.primary,
-    fontWeight: "600",
-    marginBottom: 6,
-  },
-
-  artistBio: {
-    fontSize: 13,
-    color: colors.subdued,
-  },
-
-  studioCard: {
-    backgroundColor: colors.white,
-    borderRadius: 20,
-    margin: 16,
-    padding: 16,
-    elevation: 2,
-  },
-
-  infoRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 10,
-  },
-
-  infoText: {
-    marginLeft: 10,
-    color: colors.text,
-  },
-
-  mapBtn: {
-    marginTop: 12,
-    backgroundColor: colors.primary,
-    paddingVertical: 10,
-    borderRadius: 20,
-    alignItems: "center",
-    flexDirection: "row",
-    justifyContent: "center",
-    gap: 6,
-  },
-
-  mapBtnText: {
-    color: colors.white,
-    fontWeight: "600",
-  },
-  socialCard: {
-    flexDirection: "row",
-    justifyContent: "space-around",
-    backgroundColor: colors.white,
-    borderRadius: 20,
-    marginHorizontal: 16,
-    marginBottom: 12,
-    paddingVertical: 14,
-    elevation: 2,
-  },
-
-  socialIconBtn: {
-    alignItems: "center",
-    justifyContent: "center",
-  },
-
-  socialLabel: {
-    fontSize: 12,
-    marginTop: 4,
-    color: colors.subdued,
-    fontWeight: "500",
-  },
-
-  socialRow: {
-    flexDirection: "row",
-    justifyContent: "space-around",
-    marginHorizontal: 16,
-    marginBottom: 12,
-    marginTop: -4,
-  },
-  mapPreviewCard: {
-    borderRadius: 16,
-    overflow: "hidden",
-    marginTop: 12,
-  },
-
-  mapImage: {
-    width: "100%",
-    height: 160,
-    resizeMode: "cover",
-    backgroundColor: colors.placeholder,
-  },
-
-  mapOverlay: {
-    position: "absolute",
-    bottom: 10,
-    right: 10,
-    backgroundColor: colors.primary,
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 20,
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 4,
-  },
-
-  mapOverlayText: {
-    color: "white",
-    fontSize: 12,
-    fontWeight: "600",
   },
 });

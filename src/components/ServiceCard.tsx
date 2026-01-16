@@ -1,8 +1,8 @@
-import React from 'react';
-import { View, StyleSheet } from 'react-native';
-import { Card, Text, Button } from 'react-native-paper';
+import React from "react";
+import { View, StyleSheet } from "react-native";
+import { Card, Text, Button } from "react-native-paper";
 
-import { colors } from '../theme';
+import { colors } from "../theme";
 
 type Service = {
   id: string;
@@ -25,7 +25,7 @@ const ServiceCard: React.FC<Props> = ({ service, onPress }) => {
         {/* IMAGE */}
         <Card.Cover
           source={{
-            uri: service.thumbnailUrl ?? 'https://picsum.photos/300',
+            uri: service.thumbnailUrl ?? "https://picsum.photos/300",
           }}
           style={styles.image}
         />
@@ -44,7 +44,12 @@ const ServiceCard: React.FC<Props> = ({ service, onPress }) => {
           <View style={styles.footer}>
             <Text style={styles.price}>₹{service.price}</Text>
 
-            <Button mode="contained" compact onPress={onPress} style={styles.button}>
+            <Button
+              mode="contained"
+              compact
+              onPress={onPress}
+              style={styles.button}
+            >
               <Text style={styles.buttonLabel}>Book</Text>
             </Button>
           </View>
@@ -63,10 +68,10 @@ const styles = StyleSheet.create({
   buttonLabel: {
     color: colors.mutedLight,
     fontSize: 12,
-    fontWeight: '700',
+    fontWeight: "700",
   },
   card: {
-    backgroundColor: colors.primaryLight,
+    backgroundColor: colors.white,
     borderRadius: 20,
     flex: 1,
     margin: 8,
@@ -77,22 +82,26 @@ const styles = StyleSheet.create({
     paddingTop: 10,
   },
   footer: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    alignItems: "center",
+    flexDirection: "row",
+    justifyContent: "space-between",
   },
   /* Taller image */
   image: {
     height: 180,
+    backgroundColor: colors.white,
+    borderWidth: 5.5,
+    borderRadius: 14,
+    borderColor: colors.white,
   },
   inner: {
     borderRadius: 20,
-    overflow: 'hidden',
+    overflow: "hidden",
   },
   price: {
     color: colors.shadow,
     fontSize: 17,
-    fontWeight: '800',
+    fontWeight: "800",
   },
   subtitle: {
     color: colors.muted,
@@ -102,7 +111,7 @@ const styles = StyleSheet.create({
   title: {
     color: colors.text,
     fontSize: 15,
-    fontWeight: '700',
+    fontWeight: "700",
     marginBottom: 2,
   },
 });

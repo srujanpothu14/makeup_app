@@ -1,7 +1,7 @@
 export type Service = {
   id: string;
   title: string;
-  category: "Makeup" | "Skincare" | "Hair" | "Nails";
+  category: "Makeup" | "Skincare" | "Hair" | "Nails" | "Other";
   durationMin: number;
   price: number;
   thumbnailUrl?: string;
