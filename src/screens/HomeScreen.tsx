@@ -346,6 +346,84 @@ export default function HomeScreen() {
             <Text style={styles.bookingBtnText}>Book Now</Text>
           </TouchableOpacity>
         </View>
+        <SectionHeader title="About Us" />
+        <View style={styles.artistCard}>
+          <Image
+            source={{ uri: ownerDetails.photo }}
+            style={styles.artistImage}
+          />
+
+          <View style={styles.artistInfo}>
+            <Text style={styles.artistName}>{ownerDetails.name}</Text>
+            <Text style={styles.artistStudio}>{ownerDetails.designation}</Text>
+            <Text style={styles.artistBio}>{ownerDetails.bio}</Text>
+          </View>
+        </View>
+        <View style={styles.socialCard}>
+          <TouchableOpacity
+            style={styles.socialIconBtn}
+            onPress={() => Linking.openURL(`tel:${ownerDetails.phone}`)}
+          >
+            <Ionicons name="call-outline" size={22} color={colors.primary} />
+            <Text style={styles.socialLabel}>Call</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.socialIconBtn}
+            onPress={() => Linking.openURL(ownerDetails.whatsapp)}
+          >
+            <Ionicons name="logo-whatsapp" size={22} color={colors.primary} />
+            <Text style={styles.socialLabel}>WhatsApp</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.socialIconBtn}
+            onPress={() => Linking.openURL(ownerDetails.instagram)}
+          >
+            <Ionicons name="logo-instagram" size={22} color={colors.primary} />
+            <Text style={styles.socialLabel}>Instagram</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.socialIconBtn}
+            onPress={() => Linking.openURL(ownerDetails.facebook)}
+          >
+            <Ionicons name="logo-facebook" size={22} color={colors.primary} />
+            <Text style={styles.socialLabel}>Facebook</Text>
+          </TouchableOpacity>
+        </View>
+        <Text style={styles.aboutSubTitle}>Studio Details</Text>
+        <View style={styles.studioCard}>
+          <View style={styles.infoRow}>
+            <Ionicons
+              name="location-outline"
+              size={20}
+              color={colors.primary}
+            />
+            <Text style={styles.infoText}>{ownerDetails.location}</Text>
+          </View>
+
+          <View style={styles.infoRow}>
+            <Ionicons name="time-outline" size={20} color={colors.primary} />
+            <Text style={styles.infoText}>Mon – Sun | 9 AM – 8 PM</Text>
+          </View>
+
+          <View style={styles.infoRow}>
+            <Ionicons name="car-outline" size={20} color={colors.primary} />
+            <Text style={styles.infoText}>Parking Available</Text>
+          </View>
+          <TouchableOpacity
+            style={styles.mapPreviewCard}
+            onPress={() => Linking.openURL(ownerDetails.locationUrl)}
+          >
+            <Image source={locationImg} style={styles.mapImage} />
+
+            <View style={styles.mapOverlay}>
+              <Ionicons name="location-outline" size={18} color="white" />
+              <Text style={styles.mapOverlayText}>View on Map</Text>
+            </View>
+          </TouchableOpacity>
+          </View>
       </ScrollView>
 
       {/* FULLSCREEN IMAGE */}
@@ -513,4 +591,143 @@ const styles = StyleSheet.create({
     fontSize: 28,
     fontWeight: "bold",
   },
+  aboutSubTitle: {
+    fontSize: 16,
+    fontWeight: "700",
+    marginLeft: 16,
+  },
+
+  artistCard: {
+    flexDirection: "row",
+    backgroundColor: colors.white,
+    borderRadius: 20,
+    margin: 16,
+    padding: 16,
+    alignItems: "center",
+    elevation: 2,
+  },
+
+  artistImage: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    marginRight: 12,
+    backgroundColor: colors.placeholder,
+  },
+
+  artistInfo: {
+    flex: 1,
+  },
+
+  artistName: {
+    fontSize: 18,
+    fontWeight: "700",
+  },
+
+  artistStudio: {
+    color: colors.primary,
+    fontWeight: "600",
+    marginBottom: 6,
+  },
+
+  artistBio: {
+    fontSize: 13,
+    color: colors.subdued,
+  },
+
+  studioCard: {
+    backgroundColor: colors.white,
+    borderRadius: 20,
+    margin: 16,
+    padding: 16,
+    elevation: 2,
+  },
+
+  infoRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 10,
+  },
+
+  infoText: {
+    marginLeft: 10,
+    color: colors.text,
+  },
+
+  mapBtn: {
+    marginTop: 12,
+    backgroundColor: colors.primary,
+    paddingVertical: 10,
+    borderRadius: 20,
+    alignItems: "center",
+    flexDirection: "row",
+    justifyContent: "center",
+    gap: 6,
+  },
+
+  mapBtnText: {
+    color: colors.white,
+    fontWeight: "600",
+  },
+  socialCard: {
+    flexDirection: "row",
+    justifyContent: "space-around",
+    backgroundColor: colors.white,
+    borderRadius: 20,
+    marginHorizontal: 16,
+    marginBottom: 12,
+    paddingVertical: 14,
+    elevation: 2,
+  },
+
+  socialIconBtn: {
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
+  socialLabel: {
+    fontSize: 12,
+    marginTop: 4,
+    color: colors.subdued,
+    fontWeight: "500",
+  },
+
+  socialRow: {
+    flexDirection: "row",
+    justifyContent: "space-around",
+    marginHorizontal: 16,
+    marginBottom: 12,
+    marginTop: -4,
+  },
+  mapPreviewCard: {
+    borderRadius: 16,
+    overflow: "hidden",
+    marginTop: 12,
+  },
+
+  mapImage: {
+    width: "100%",
+    height: 160,
+    resizeMode: "cover",
+    backgroundColor: colors.placeholder,
+  },
+
+  mapOverlay: {
+    position: "absolute",
+    bottom: 10,
+    right: 10,
+    backgroundColor: colors.primary,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 20,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+  },
+
+  mapOverlayText: {
+    color: "white",
+    fontSize: 12,
+    fontWeight: "600",
+  }
 });
