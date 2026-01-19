@@ -5,7 +5,17 @@ import React, {
   useRef,
   useEffect,
 } from "react";
-import { View, TextInput, StyleSheet, TouchableOpacity } from "react-native";
+import {
+  View,
+  Text,
+  TextInput,
+  StyleSheet,
+  TouchableOpacity,
+  Modal,
+  ScrollView,
+  Pressable,
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useQuery } from "@tanstack/react-query";
 import { FlashList } from "@shopify/flash-list";
@@ -36,6 +46,7 @@ export default function ServicesScreen() {
 
   const [selectedServices, setSelectedServices] =
     useState<Service[]>(preSelected);
+  const [cartOpen, setCartOpen] = useState(false);
 
   useEffect(() => {
     const unsubscribe = navigation.addListener("tabPress", () => {
@@ -83,6 +94,11 @@ export default function ServicesScreen() {
     });
   }, [navigation, selectedServices]);
 
+  const total = useMemo(
+    () => selectedServices.reduce((sum, s) => sum + s.price, 0),
+    [selectedServices],
+  );
+
   const renderItem = useCallback(
     ({ item }: { item: Service }) => {
       const isSelected = selectedIds.has(item.id);
@@ -91,12 +107,12 @@ export default function ServicesScreen() {
         <ServiceCard
           service={item}
           selected={isSelected}
-          onPress={() => toggleService(item)}
-          onBook={goToBooking}
+          onPress={() => navigation.navigate("ServiceDetail", { id: item.id })}
+          onBook={() => toggleService(item)}
         />
       );
     },
-    [goToBooking, selectedIds, toggleService],
+    [navigation, selectedIds, toggleService],
   );
 
   return (
@@ -131,10 +147,75 @@ export default function ServicesScreen() {
 
       {/* Bottom CTA */}
       {selectedServices.length > 0 && (
-        <TouchableOpacity style={styles.cta} onPress={goToBooking}>
-          <Ionicons name="checkmark-circle" size={22} color={colors.white} />
+        <TouchableOpacity
+          style={styles.cartFab}
+          onPress={() => setCartOpen(true)}
+        >
+          <Ionicons name="cart" size={22} color={colors.white} />
+          <View style={styles.cartBadge}>
+            <Text style={styles.cartBadgeText}>{selectedServices.length}</Text>
+          </View>
         </TouchableOpacity>
       )}
+
+      <Modal
+        visible={cartOpen}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setCartOpen(false)}
+      >
+        <SafeAreaView style={styles.modalOverlay} edges={["top", "bottom"]}>
+          <Pressable
+            style={styles.modalBackdrop}
+            onPress={() => setCartOpen(false)}
+          />
+          <Pressable style={styles.modalCard} onPress={() => null}>
+            <View style={styles.modalHandle} />
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Selected Services</Text>
+              <TouchableOpacity onPress={() => setCartOpen(false)}>
+                <Ionicons name="close" size={22} color={colors.text} />
+              </TouchableOpacity>
+            </View>
+
+            <ScrollView contentContainerStyle={styles.modalList}>
+              {selectedServices.length === 0 ? (
+                <View style={styles.modalEmpty}>
+                  <Ionicons
+                    name="cart-outline"
+                    size={36}
+                    color={colors.subdued}
+                  />
+                  <Text style={styles.modalEmptyText}>
+                    No services selected
+                  </Text>
+                </View>
+              ) : (
+                selectedServices.map((service) => (
+                  <View key={service.id} style={styles.modalRow}>
+                    <View style={styles.modalRowText}>
+                      <Text style={styles.modalServiceTitle}>
+                        {service.title}
+                      </Text>
+                      <Text style={styles.modalServiceSub}>
+                        {service.category}
+                      </Text>
+                    </View>
+                    <Text style={styles.modalPrice}>₹{service.price}</Text>
+                  </View>
+                ))
+              )}
+            </ScrollView>
+
+            <View style={styles.modalFooter}>
+              <Text style={styles.modalTotal}>Total: ₹{total}</Text>
+              <TouchableOpacity style={styles.modalCta} onPress={goToBooking}>
+                <Text style={styles.modalCtaText}>Proceed</Text>
+              </TouchableOpacity>
+            </View>
+          </Pressable>
+        </SafeAreaView>
+      </Modal>
     </View>
   );
 }
@@ -173,12 +254,165 @@ const styles = StyleSheet.create({
     fontSize: 15,
   },
 
-  cta: {
+  cartFab: {
     position: "absolute",
     bottom: 20,
     right: 20,
     backgroundColor: colors.primary,
-    padding: 14,
-    borderRadius: 30,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    alignItems: "center",
+    justifyContent: "center",
+    shadowColor: colors.shadow,
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 8,
+    borderColor: colors.accent,
+    borderWidth: 2,
+  },
+
+  cartBadge: {
+    position: "absolute",
+    top: -2,
+    right: -2,
+    backgroundColor: colors.white,
+    borderRadius: 10,
+    minWidth: 18,
+    height: 18,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: 4,
+    borderColor: colors.accent,
+    borderWidth: 1,
+  },
+
+  cartBadgeText: {
+    color: colors.primary,
+    fontSize: 11,
+    fontWeight: "700",
+  },
+
+  modalOverlay: {
+    flex: 1,
+    justifyContent: "flex-end",
+  },
+
+  modalBackdrop: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: "rgba(0,0,0,0.45)",
+  },
+
+  modalCard: {
+    backgroundColor: colors.white,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    maxHeight: "70%",
+    paddingBottom: 8,
+    paddingTop: 6,
+    shadowColor: colors.shadow,
+    shadowOpacity: 0.12,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: -2 },
+    elevation: 10,
+  },
+
+  modalHandle: {
+    alignSelf: "center",
+    width: 36,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: colors.mutedLight,
+    marginBottom: 8,
+  },
+
+  modalHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: 16,
+    paddingBottom: 10,
+  },
+
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: "700",
+    color: colors.text,
+  },
+
+  modalList: {
+    paddingHorizontal: 16,
+    paddingBottom: 12,
+  },
+
+  modalEmpty: {
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 24,
+    gap: 8,
+  },
+
+  modalEmptyText: {
+    color: colors.subdued,
+    fontSize: 14,
+  },
+
+  modalRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.backgroundSoft,
+  },
+
+  modalRowText: {
+    flex: 1,
+    marginRight: 12,
+  },
+
+  modalServiceTitle: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: colors.text,
+  },
+
+  modalServiceSub: {
+    fontSize: 12,
+    color: colors.subdued,
+  },
+
+  modalPrice: {
+    fontWeight: "700",
+    color: colors.primary,
+  },
+
+  modalFooter: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    borderTopWidth: 1,
+    borderTopColor: colors.backgroundSoft,
+  },
+
+  modalTotal: {
+    fontSize: 16,
+    fontWeight: "700",
+    color: colors.text,
+  },
+
+  modalCta: {
+    backgroundColor: colors.primary,
+    paddingHorizontal: 18,
+    paddingVertical: 10,
+    borderRadius: 20,
+  },
+
+  modalCtaText: {
+    color: colors.white,
+    fontWeight: "700",
   },
 });

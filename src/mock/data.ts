@@ -118,8 +118,7 @@ export const seedServices: Service[] = [
     description: "Traditional and modern mehendi designs.",
     thumbnailUrl: "https://picsum.photos/seed/mehendi/400",
   },
-]
-;
+];
 
 export const offers = [
   {
@@ -156,6 +155,28 @@ export const feedbacks: Feedback[] = [
   { id: "f1", name: "Aishwarya", text: "Absolutely loved my bridal makeup!" },
   { id: "f2", name: "Sneha", text: "Great service, very friendly artist." },
   { id: "f3", name: "Pooja", text: "Best makeup studio in Hyderabad!" },
+];
+
+export const ownerDetails = {
+  name: "Manasa",
+  studio: "Manasa Makeup Studio &\nBeauty Zone",
+  designation: "Professional Makeup Artist",
+  location: "Korutla, Telangana",
+  locationUrl: "https://maps.app.goo.gl/5VM2qV599jiPovEj8?g_st=iw",
+  phone: "9642166712",
+  instagram:
+    "https://www.instagram.com/manasa_makeovers_korutla?igsh=enR0ZGI4MHl3a25l",
+  whatsapp: "https://wa.me/919642166712?text=Hi",
+  bio: "Certified professional makeup artist with 6+ years of experience.",
+  facebook: "https://www.facebook.com/share/1b1vQoV78G/?mibextid=wwXIfr",
+  photo: "https://maps.app.goo.gl/TJ7cExHcMTJmixDc9",
+};
+
+export const whyChooseItems = [
+  { icon: "💄", text: "6+ Years Experience" },
+  { icon: "🏆", text: "Certified Artist" },
+  { icon: "👰", text: "500+ Happy Brides" },
+  { icon: "✨", text: "Premium Products" },
 ];
 
 export const initialBookings: Booking[] = [];

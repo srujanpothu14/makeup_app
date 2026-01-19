@@ -26,7 +26,12 @@ import ServiceCard from "../components/ServiceCard";
 import OfferCard from "../components/OfferCard";
 import CarouselDots from "../components/CarouselDots";
 import HeroHeader from "../components/HeroHeader";
-import { seedServices, offers } from "../mock/data";
+import {
+  seedServices,
+  offers,
+  ownerDetails,
+  whyChooseItems,
+} from "../mock/data";
 import { fetchpreviousWorkMedia, fetchFeedbacks } from "../mock/api";
 import { colors } from "../theme";
 import logo from "../assets/manasa_logo.png";
@@ -63,43 +68,7 @@ type Feedback = {
   text: string;
 };
 
-type OwnerDetails = {
-  name: string;
-  studio: string;
-  designation: string;
-  location: string;
-  locationUrl: string;
-  phone: string;
-  instagram: string;
-  whatsapp: string;
-  bio: string;
-  facebook: string;
-  photo: string;
-};
-
-/* -------------------- DATA -------------------- */
-
-const ownerDetails: OwnerDetails = {
-  name: "Manasa",
-  studio: "Manasa Makeup Studio\nAnd Beauty Zone",
-  designation: "Professional Makeup Artist",
-  location: "Korutla, Telangana",
-  locationUrl: "https://maps.app.goo.gl/5VM2qV599jiPovEj8?g_st=iw",
-  phone: "9642166712",
-  instagram:
-    "https://www.instagram.com/manasa_makeovers_korutla?igsh=enR0ZGI4MHl3a25l",
-  whatsapp: "https://wa.me/919642166712?text=Hi",
-  bio: "Certified professional makeup artist with 6+ years of experience.",
-  facebook: "https://www.facebook.com/share/1b1vQoV78G/?mibextid=wwXIfr",
-  photo: "https://maps.app.goo.gl/TJ7cExHcMTJmixDc9",
-};
-
-const WHY_CHOOSE_ITEMS = [
-  { icon: "💄", text: "6+ Years Experience" },
-  { icon: "🏆", text: "Certified Artist" },
-  { icon: "👰", text: "500+ Happy Brides" },
-  { icon: "✨", text: "Premium Products" },
-];
+type OwnerDetails = typeof ownerDetails;
 
 const OffersCarousel = React.memo(function OffersCarousel({
   offersData,
@@ -298,7 +267,7 @@ const WhyChooseSection = React.memo(function WhyChooseSection() {
     <>
       <SectionHeader title="Why Choose Us" />
       <View style={styles.whyChooseGrid}>
-        {WHY_CHOOSE_ITEMS.map((item, i) => (
+        {whyChooseItems.map((item, i) => (
           <View key={i} style={styles.whyChooseItem}>
             <Text style={styles.whyIcon}>{item.icon}</Text>
             <Text style={styles.whyText}>{item.text}</Text>

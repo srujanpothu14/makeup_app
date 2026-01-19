@@ -1,5 +1,6 @@
-import React from "react";
-import { View, StyleSheet } from "react-native";
+import React, { useEffect, useMemo, useRef } from "react";
+import { View, StyleSheet, Animated, Easing } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import { Card, Text, Button } from "react-native-paper";
 import { colors } from "../theme";
 
@@ -29,6 +30,46 @@ const ServiceCard: React.FC<Props> = React.memo(function ServiceCard({
   onPress,
   onBook,
 }: Props) {
+  const anim = useRef(new Animated.Value(selected ? 1 : 0)).current;
+
+  useEffect(() => {
+    Animated.timing(anim, {
+      toValue: selected ? 1 : 0,
+      duration: 180,
+      easing: Easing.out(Easing.quad),
+      useNativeDriver: false,
+    }).start();
+  }, [anim, selected]);
+
+  const bookOpacity = anim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [1, 0],
+  });
+
+  const tickOpacity = anim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0, 1],
+  });
+
+  const buttonBg = anim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [colors.primary, colors.primary],
+  });
+
+  const buttonContent = useMemo(
+    () => (
+      <View style={styles.buttonContent}>
+        <Animated.View style={{ opacity: bookOpacity }}>
+          <Text style={styles.buttonText}>Book</Text>
+        </Animated.View>
+        <Animated.View style={[styles.tickWrap, { opacity: tickOpacity }]}>
+          <Ionicons name="checkmark" size={16} color={colors.white} />
+        </Animated.View>
+      </View>
+    ),
+    [bookOpacity, tickOpacity],
+  );
+
   return (
     <Card
       style={[
@@ -65,9 +106,9 @@ const ServiceCard: React.FC<Props> = React.memo(function ServiceCard({
               mode="contained"
               compact
               onPress={onBook}
-              style={styles.button}
+              style={[styles.button, { backgroundColor: buttonBg }]}
             >
-              <Text style={styles.buttonLabel}>Book</Text>
+              {buttonContent}
             </Button>
           </View>
         </Card.Content>
@@ -85,7 +126,13 @@ const styles = StyleSheet.create({
     width: 55,
   },
 
-  buttonLabel: {
+  buttonContent: {
+    alignItems: "center",
+    justifyContent: "center",
+    minHeight: 18,
+  },
+
+  buttonText: {
     color: colors.mutedLight,
     fontSize: 12,
     fontWeight: "700",
@@ -128,6 +175,12 @@ const styles = StyleSheet.create({
   inner: {
     borderRadius: 20,
     overflow: "hidden",
+  },
+
+  tickWrap: {
+    position: "absolute",
+    alignItems: "center",
+    justifyContent: "center",
   },
 
   price: {
