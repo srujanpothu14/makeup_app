@@ -1,18 +1,19 @@
-import React, { useEffect } from 'react';
-import { NavigationContainer } from '@react-navigation/native';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import React, { useEffect } from "react";
+import { NavigationContainer } from "@react-navigation/native";
+import { createNativeStackNavigator } from "@react-navigation/native-stack";
 
-import ServiceDetailScreen from '../screens/ServiceDetailScreen';
-import OfferDetailsScreen from '../screens/OfferDetailsScreen';
-import { useAuthStore } from '../store/useAuthStore';
+import ServiceDetailScreen from "../screens/ServiceDetailScreen";
+import OfferDetailsScreen from "../screens/OfferDetailsScreen";
+import { useAuthStore } from "../store/useAuthStore";
 
-import MainTabs from './MainTabs';
-import AuthStack from './AuthStack';
+import MainTabs from "./MainTabs";
+import AuthStack from "./AuthStack";
 
 const RootStack = createNativeStackNavigator();
 
 export default function AppNavigator() {
-  const { user, hydrate } = useAuthStore();
+  const user = useAuthStore((state) => state.user);
+  const hydrate = useAuthStore((state) => state.hydrate);
 
   useEffect(() => {
     hydrate();
@@ -32,7 +33,7 @@ export default function AppNavigator() {
               name="ServiceDetail"
               component={ServiceDetailScreen}
               options={{
-                title: 'Service Details', // or "" if you want no title
+                title: "Service Details", // or "" if you want no title
                 headerBackTitleVisible: false, // removes "MainTabs"
               }}
             />
@@ -40,13 +41,17 @@ export default function AppNavigator() {
               name="OfferDetails"
               component={OfferDetailsScreen}
               options={{
-                title: 'Offer Details',
+                title: "Offer Details",
                 headerBackTitleVisible: false,
               }}
             />
           </>
         ) : (
-          <RootStack.Screen name="Auth" component={AuthStack} options={{ headerShown: false }} />
+          <RootStack.Screen
+            name="Auth"
+            component={AuthStack}
+            options={{ headerShown: false }}
+          />
         )}
       </RootStack.Navigator>
     </NavigationContainer>

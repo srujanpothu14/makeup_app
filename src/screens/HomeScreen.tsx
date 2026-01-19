@@ -17,10 +17,8 @@ import {
   NativeSyntheticEvent,
   NativeScrollEvent,
   Modal,
-  StatusBar,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { FlashList } from "@shopify/flash-list";
 import { useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 
@@ -65,11 +63,25 @@ type Feedback = {
   text: string;
 };
 
+type OwnerDetails = {
+  name: string;
+  studio: string;
+  designation: string;
+  location: string;
+  locationUrl: string;
+  phone: string;
+  instagram: string;
+  whatsapp: string;
+  bio: string;
+  facebook: string;
+  photo: string;
+};
+
 /* -------------------- DATA -------------------- */
 
-const ownerDetails = {
+const ownerDetails: OwnerDetails = {
   name: "Manasa",
-  studio: "Manasa Makeup Studio & Beauty Zone",
+  studio: "Manasa Makeup Studio\nAnd Beauty Zone",
   designation: "Professional Makeup Artist",
   location: "Korutla, Telangana",
   locationUrl: "https://maps.app.goo.gl/5VM2qV599jiPovEj8?g_st=iw",
@@ -82,9 +94,340 @@ const ownerDetails = {
   photo: "https://maps.app.goo.gl/TJ7cExHcMTJmixDc9",
 };
 
+const WHY_CHOOSE_ITEMS = [
+  { icon: "💄", text: "6+ Years Experience" },
+  { icon: "🏆", text: "Certified Artist" },
+  { icon: "👰", text: "500+ Happy Brides" },
+  { icon: "✨", text: "Premium Products" },
+];
+
+const OffersCarousel = React.memo(function OffersCarousel({
+  offersData,
+  activeIndex,
+  onMomentumEnd,
+  onPressOffer,
+}: {
+  offersData: Offer[];
+  activeIndex: number;
+  onMomentumEnd: (e: NativeSyntheticEvent<NativeScrollEvent>) => void;
+  onPressOffer: (id: string) => void;
+}) {
+  return (
+    <>
+      <SectionHeader title="Exclusive Offers" />
+      <ScrollView
+        horizontal
+        pagingEnabled
+        showsHorizontalScrollIndicator={false}
+        onMomentumScrollEnd={onMomentumEnd}
+      >
+        {offersData.map((offer) => (
+          <OfferCard
+            key={offer.id}
+            offer={offer}
+            onPress={() => onPressOffer(offer.id)}
+          />
+        ))}
+      </ScrollView>
+      <CarouselDots count={offersData.length} active={activeIndex} />
+    </>
+  );
+});
+
+const ServicesCarousel = React.memo(function ServicesCarousel({
+  slides,
+  services,
+  activeIndex,
+  onMomentumEnd,
+  onPressService,
+  onViewAll,
+}: {
+  slides: number;
+  services: Service[];
+  activeIndex: number;
+  onMomentumEnd: (e: NativeSyntheticEvent<NativeScrollEvent>) => void;
+  onPressService: (id: string) => void;
+  onViewAll: () => void;
+}) {
+  return (
+    <>
+      <SectionHeader
+        title="Featured Services"
+        actionLabel="View all"
+        onActionPress={onViewAll}
+      />
+      <ScrollView
+        horizontal
+        pagingEnabled
+        showsHorizontalScrollIndicator={false}
+        onMomentumScrollEnd={onMomentumEnd}
+      >
+        {Array.from({ length: slides }).map((_, i) => {
+          const first = services[i * 2];
+          const second = services[i * 2 + 1];
+
+          return (
+            <View key={i} style={styles.servicePage}>
+              {first && (
+                <ServiceCard
+                  service={first}
+                  onPress={() => onPressService(first.id)}
+                  onBook={() => onPressService(first.id)}
+                />
+              )}
+              {second && (
+                <ServiceCard
+                  service={second}
+                  onPress={() => onPressService(second.id)}
+                  onBook={() => onPressService(second.id)}
+                />
+              )}
+            </View>
+          );
+        })}
+      </ScrollView>
+      <CarouselDots count={slides} active={activeIndex} />
+    </>
+  );
+});
+
+const GalleryCarousel = React.memo(function GalleryCarousel({
+  slides,
+  items,
+  activeIndex,
+  onMomentumEnd,
+  onSelect,
+  onViewAll,
+}: {
+  slides: number;
+  items: MediaItem[];
+  activeIndex: number;
+  onMomentumEnd: (e: NativeSyntheticEvent<NativeScrollEvent>) => void;
+  onSelect: (item: MediaItem) => void;
+  onViewAll: () => void;
+}) {
+  return (
+    <>
+      <SectionHeader
+        title="Our Work"
+        actionLabel="View all"
+        onActionPress={onViewAll}
+      />
+      <ScrollView
+        horizontal
+        pagingEnabled
+        showsHorizontalScrollIndicator={false}
+        onMomentumScrollEnd={onMomentumEnd}
+      >
+        {Array.from({ length: slides }).map((_, i) => {
+          const first = items[i * 2];
+          const second = items[i * 2 + 1];
+
+          return (
+            <View key={i} style={styles.galleryPage}>
+              {[first, second].map(
+                (item) =>
+                  item && (
+                    <TouchableOpacity
+                      key={item.id}
+                      style={styles.galleryGridItem}
+                      onPress={() => onSelect(item)}
+                    >
+                      <Image
+                        source={{ uri: item.url }}
+                        style={styles.galleryImage}
+                      />
+                    </TouchableOpacity>
+                  ),
+              )}
+            </View>
+          );
+        })}
+      </ScrollView>
+      <CarouselDots count={slides} active={activeIndex} />
+    </>
+  );
+});
+
+const ReviewsCarousel = React.memo(function ReviewsCarousel({
+  slides,
+  items,
+  activeIndex,
+  onMomentumEnd,
+}: {
+  slides: number;
+  items: Feedback[];
+  activeIndex: number;
+  onMomentumEnd: (e: NativeSyntheticEvent<NativeScrollEvent>) => void;
+}) {
+  return (
+    <>
+      <SectionHeader title="Customer Reviews" />
+      <ScrollView
+        horizontal
+        pagingEnabled
+        showsHorizontalScrollIndicator={false}
+        onMomentumScrollEnd={onMomentumEnd}
+      >
+        {Array.from({ length: slides }).map((_, i) => {
+          const first = items[i * 2];
+          const second = items[i * 2 + 1];
+
+          return (
+            <View key={i} style={styles.reviewPage}>
+              {[first, second].map(
+                (f) =>
+                  f && (
+                    <View key={f.id} style={styles.feedbackCard}>
+                      <Text style={styles.feedbackText}>{f.text}</Text>
+                      <Text style={styles.feedbackName}>– {f.name}</Text>
+                    </View>
+                  ),
+              )}
+            </View>
+          );
+        })}
+      </ScrollView>
+      <CarouselDots count={slides} active={activeIndex} />
+    </>
+  );
+});
+
+const WhyChooseSection = React.memo(function WhyChooseSection() {
+  return (
+    <>
+      <SectionHeader title="Why Choose Us" />
+      <View style={styles.whyChooseGrid}>
+        {WHY_CHOOSE_ITEMS.map((item, i) => (
+          <View key={i} style={styles.whyChooseItem}>
+            <Text style={styles.whyIcon}>{item.icon}</Text>
+            <Text style={styles.whyText}>{item.text}</Text>
+          </View>
+        ))}
+      </View>
+    </>
+  );
+});
+
+const BookingCta = React.memo(function BookingCta({
+  onPress,
+}: {
+  onPress: () => void;
+}) {
+  return (
+    <View style={styles.bookingCard}>
+      <Text style={styles.bookingTitle}>Ready to Glow?</Text>
+      <TouchableOpacity style={styles.bookingBtn} onPress={onPress}>
+        <Text style={styles.bookingBtnText}>Book Now</Text>
+      </TouchableOpacity>
+    </View>
+  );
+});
+
+const AboutSection = React.memo(function AboutSection({
+  owner,
+}: {
+  owner: OwnerDetails;
+}) {
+  return (
+    <>
+      <SectionHeader title="About Us" />
+      <View style={styles.artistCard}>
+        <Image source={{ uri: owner.photo }} style={styles.artistImage} />
+
+        <View style={styles.artistInfo}>
+          <Text style={styles.artistName}>{owner.name}</Text>
+          <Text style={styles.artistStudio}>{owner.designation}</Text>
+          <Text style={styles.artistBio}>{owner.bio}</Text>
+        </View>
+      </View>
+    </>
+  );
+});
+
+const SocialSection = React.memo(function SocialSection({
+  owner,
+}: {
+  owner: OwnerDetails;
+}) {
+  return (
+    <View style={styles.socialCard}>
+      <TouchableOpacity
+        style={styles.socialIconBtn}
+        onPress={() => Linking.openURL(`tel:${owner.phone}`)}
+      >
+        <Ionicons name="call-outline" size={22} color={colors.primary} />
+        <Text style={styles.socialLabel}>Call</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity
+        style={styles.socialIconBtn}
+        onPress={() => Linking.openURL(owner.whatsapp)}
+      >
+        <Ionicons name="logo-whatsapp" size={22} color={colors.primary} />
+        <Text style={styles.socialLabel}>WhatsApp</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity
+        style={styles.socialIconBtn}
+        onPress={() => Linking.openURL(owner.instagram)}
+      >
+        <Ionicons name="logo-instagram" size={22} color={colors.primary} />
+        <Text style={styles.socialLabel}>Instagram</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity
+        style={styles.socialIconBtn}
+        onPress={() => Linking.openURL(owner.facebook)}
+      >
+        <Ionicons name="logo-facebook" size={22} color={colors.primary} />
+        <Text style={styles.socialLabel}>Facebook</Text>
+      </TouchableOpacity>
+    </View>
+  );
+});
+
+const StudioDetailsSection = React.memo(function StudioDetailsSection({
+  owner,
+  onOpenMap,
+}: {
+  owner: OwnerDetails;
+  onOpenMap: () => void;
+}) {
+  return (
+    <>
+      <Text style={styles.aboutSubTitle}>Studio Details</Text>
+      <View style={styles.studioCard}>
+        <View style={styles.infoRow}>
+          <Ionicons name="location-outline" size={20} color={colors.primary} />
+          <Text style={styles.infoText}>{owner.location}</Text>
+        </View>
+
+        <View style={styles.infoRow}>
+          <Ionicons name="time-outline" size={20} color={colors.primary} />
+          <Text style={styles.infoText}>Mon – Sun | 9 AM – 8 PM</Text>
+        </View>
+
+        <View style={styles.infoRow}>
+          <Ionicons name="car-outline" size={20} color={colors.primary} />
+          <Text style={styles.infoText}>Parking Available</Text>
+        </View>
+        <TouchableOpacity style={styles.mapPreviewCard} onPress={onOpenMap}>
+          <Image source={locationImg} style={styles.mapImage} />
+
+          <View style={styles.mapOverlay}>
+            <Ionicons name="location-outline" size={18} color="white" />
+            <Text style={styles.mapOverlayText}>View on Map</Text>
+          </View>
+        </TouchableOpacity>
+      </View>
+    </>
+  );
+});
+
 /* -------------------- UTILS -------------------- */
 
-const SectionHeader = ({
+const SectionHeader = React.memo(function SectionHeader({
   title,
   actionLabel,
   onActionPress,
@@ -92,16 +435,25 @@ const SectionHeader = ({
   title: string;
   actionLabel?: string;
   onActionPress?: () => void;
-}) => (
-  <View style={styles.sectionHeaderRow}>
-    <Text style={styles.sectionTitle}>{title}</Text>
-    {actionLabel && onActionPress && (
-      <TouchableOpacity onPress={onActionPress}>
-        <Text style={styles.seeAll}>{actionLabel}</Text>
-      </TouchableOpacity>
-    )}
-  </View>
-);
+}) {
+  return (
+    <View style={styles.sectionHeaderRow}>
+      <Text style={styles.sectionTitle}>{title}</Text>
+      {actionLabel && onActionPress && (
+        <TouchableOpacity onPress={onActionPress}>
+          <Text style={styles.seeAll}>{actionLabel}</Text>
+        </TouchableOpacity>
+      )}
+    </View>
+  );
+});
+
+const createScrollHandler =
+  (itemWidth: number, setIndex: (index: number) => void) =>
+  (e: NativeSyntheticEvent<NativeScrollEvent>) => {
+    const index = Math.round(e.nativeEvent.contentOffset.x / itemWidth);
+    setIndex(index);
+  };
 
 /* -------------------- SCREEN -------------------- */
 
@@ -127,7 +479,7 @@ export default function HomeScreen() {
 
   const featuredServices = useMemo<Service[]>(
     () => seedServices.filter((s) => ["s1", "s2", "s3", "s4"].includes(s.id)),
-    []
+    [],
   );
 
   const memoOffers = useMemo<Offer[]>(() => offers, []);
@@ -148,31 +500,55 @@ export default function HomeScreen() {
     loadData();
   }, []);
 
-  const createScrollHandler =
-    (itemWidth: number, setIndex: Function) =>
-    (e: NativeSyntheticEvent<NativeScrollEvent>) => {
-      const index = Math.round(e.nativeEvent.contentOffset.x / itemWidth);
-      setIndex(index);
-    };
-
-  const handleOfferScroll = useCallback(
-    createScrollHandler(OFFER_CARD_WIDTH, setOfferIndex),
-    []
+  const handleOfferScroll = useMemo(
+    () => createScrollHandler(OFFER_CARD_WIDTH, setOfferIndex),
+    [],
   );
 
-  const handleServiceScroll = useCallback(
-    createScrollHandler(width, setServiceIndex),
-    []
+  const handleServiceScroll = useMemo(
+    () => createScrollHandler(width, setServiceIndex),
+    [],
   );
 
-  const handleGalleryScroll = useCallback(
-    createScrollHandler(width, setGalleryIndex),
-    []
+  const handleGalleryScroll = useMemo(
+    () => createScrollHandler(width, setGalleryIndex),
+    [],
   );
 
-  const handleReviewScroll = useCallback(
-    createScrollHandler(width, setReviewIndex),
-    []
+  const handleReviewScroll = useMemo(
+    () => createScrollHandler(width, setReviewIndex),
+    [],
+  );
+
+  const handleOpenOffer = useCallback(
+    (offerId: string) => navigation.navigate("OfferDetails", { id: offerId }),
+    [navigation],
+  );
+
+  const handleOpenService = useCallback(
+    (serviceId: string) =>
+      navigation.navigate("ServiceDetail", { id: serviceId }),
+    [navigation],
+  );
+
+  const handleViewAllServices = useCallback(
+    () => navigation.navigate("Services"),
+    [navigation],
+  );
+
+  const handleViewAllGallery = useCallback(
+    () => navigation.navigate("Gallery"),
+    [navigation],
+  );
+
+  const handleBookNow = useCallback(
+    () => navigation.navigate("Booking"),
+    [navigation],
+  );
+
+  const handleOpenMap = useCallback(
+    () => Linking.openURL(ownerDetails.locationUrl),
+    [],
   );
 
   return (
@@ -180,250 +556,47 @@ export default function HomeScreen() {
       <ScrollView ref={scrollRef} style={styles.container}>
         <HeroHeader logo={logo} studio={ownerDetails.studio} />
 
-        {/* OFFERS */}
-        <SectionHeader title="Exclusive Offers" />
-
-        <ScrollView
-          horizontal
-          pagingEnabled
-          showsHorizontalScrollIndicator={false}
-          onScroll={handleOfferScroll}
-          scrollEventThrottle={16}
-        >
-          {memoOffers.map((offer) => (
-            <OfferCard
-              key={offer.id}
-              offer={offer}
-              onPress={() =>
-                navigation.navigate("OfferDetails", { id: offer.id })
-              }
-            />
-          ))}
-        </ScrollView>
-
-        <CarouselDots count={memoOffers.length} active={offerIndex} />
-
-        {/* SERVICES */}
-        <SectionHeader
-          title="Featured Services"
-          actionLabel="View all"
-          onActionPress={() => navigation.navigate("Services")}
+        <OffersCarousel
+          offersData={memoOffers}
+          activeIndex={offerIndex}
+          onMomentumEnd={handleOfferScroll}
+          onPressOffer={handleOpenOffer}
         />
 
-        <ScrollView
-          horizontal
-          pagingEnabled
-          showsHorizontalScrollIndicator={false}
-          onScroll={handleServiceScroll}
-          scrollEventThrottle={16}
-        >
-          {Array.from({ length: serviceSlides }).map((_, i) => {
-            const first = featuredServices[i * 2];
-            const second = featuredServices[i * 2 + 1];
-
-            return (
-              <View key={i} style={styles.servicePage}>
-                {first && (
-                  <ServiceCard
-                    service={first}
-                    onPress={() =>
-                      navigation.navigate("ServiceDetail", { id: first.id })
-                    }
-                  />
-                )}
-                {second && (
-                  <ServiceCard
-                    service={second}
-                    onPress={() =>
-                      navigation.navigate("ServiceDetail", { id: second.id })
-                    }
-                  />
-                )}
-              </View>
-            );
-          })}
-        </ScrollView>
-
-        <CarouselDots count={serviceSlides} active={serviceIndex} />
-
-        {/* GALLERY */}
-        <SectionHeader
-          title="Our Work"
-          actionLabel="View all"
-          onActionPress={() => navigation.navigate("Gallery")}
+        <ServicesCarousel
+          slides={serviceSlides}
+          services={featuredServices}
+          activeIndex={serviceIndex}
+          onMomentumEnd={handleServiceScroll}
+          onPressService={handleOpenService}
+          onViewAll={handleViewAllServices}
         />
 
-        <ScrollView
-          horizontal
-          pagingEnabled
-          showsHorizontalScrollIndicator={false}
-          onScroll={handleGalleryScroll}
-          scrollEventThrottle={16}
-        >
-          {Array.from({ length: gallerySlides }).map((_, i) => {
-            const first = galleryPreview[i * 2];
-            const second = galleryPreview[i * 2 + 1];
+        <GalleryCarousel
+          slides={gallerySlides}
+          items={galleryPreview}
+          activeIndex={galleryIndex}
+          onMomentumEnd={handleGalleryScroll}
+          onSelect={setSelectedItem}
+          onViewAll={handleViewAllGallery}
+        />
 
-            return (
-              <View key={i} style={styles.galleryPage}>
-                {[first, second].map(
-                  (item) =>
-                    item && (
-                      <TouchableOpacity
-                        key={item.id}
-                        style={styles.galleryGridItem}
-                        onPress={() => setSelectedItem(item)}
-                      >
-                        <Image
-                          source={{ uri: item.url }}
-                          style={styles.galleryImage}
-                        />
-                      </TouchableOpacity>
-                    )
-                )}
-              </View>
-            );
-          })}
-        </ScrollView>
+        <ReviewsCarousel
+          slides={reviewSlides}
+          items={feedbacks}
+          activeIndex={reviewIndex}
+          onMomentumEnd={handleReviewScroll}
+        />
 
-        <CarouselDots count={gallerySlides} active={galleryIndex} />
+        <WhyChooseSection />
 
-        {/* REVIEWS */}
-        <SectionHeader title="Customer Reviews" />
+        <BookingCta onPress={handleBookNow} />
 
-        <ScrollView
-          horizontal
-          pagingEnabled
-          showsHorizontalScrollIndicator={false}
-          onScroll={handleReviewScroll}
-          scrollEventThrottle={16}
-        >
-          {Array.from({ length: reviewSlides }).map((_, i) => {
-            const first = feedbacks[i * 2];
-            const second = feedbacks[i * 2 + 1];
+        <AboutSection owner={ownerDetails} />
 
-            return (
-              <View key={i} style={styles.reviewPage}>
-                {[first, second].map(
-                  (f) =>
-                    f && (
-                      <View key={f.id} style={styles.feedbackCard}>
-                        <Text style={styles.feedbackText}>{f.text}</Text>
-                        <Text style={styles.feedbackName}>– {f.name}</Text>
-                      </View>
-                    )
-                )}
-              </View>
-            );
-          })}
-        </ScrollView>
+        <SocialSection owner={ownerDetails} />
 
-        <CarouselDots count={reviewSlides} active={reviewIndex} />
-
-        {/* ABOUT + CTA */}
-        <SectionHeader title="Why Choose Us" />
-
-        <View style={styles.whyChooseGrid}>
-          {[
-            { icon: "💄", text: "6+ Years Experience" },
-            { icon: "🏆", text: "Certified Artist" },
-            { icon: "👰", text: "500+ Happy Brides" },
-            { icon: "✨", text: "Premium Products" },
-          ].map((item, i) => (
-            <View key={i} style={styles.whyChooseItem}>
-              <Text style={styles.whyIcon}>{item.icon}</Text>
-              <Text style={styles.whyText}>{item.text}</Text>
-            </View>
-          ))}
-        </View>
-
-        <View style={styles.bookingCard}>
-          <Text style={styles.bookingTitle}>Ready to Glow?</Text>
-          <TouchableOpacity
-            style={styles.bookingBtn}
-            onPress={() => navigation.navigate("Booking")}
-          >
-            <Text style={styles.bookingBtnText}>Book Now</Text>
-          </TouchableOpacity>
-        </View>
-        <SectionHeader title="About Us" />
-        <View style={styles.artistCard}>
-          <Image
-            source={{ uri: ownerDetails.photo }}
-            style={styles.artistImage}
-          />
-
-          <View style={styles.artistInfo}>
-            <Text style={styles.artistName}>{ownerDetails.name}</Text>
-            <Text style={styles.artistStudio}>{ownerDetails.designation}</Text>
-            <Text style={styles.artistBio}>{ownerDetails.bio}</Text>
-          </View>
-        </View>
-        <View style={styles.socialCard}>
-          <TouchableOpacity
-            style={styles.socialIconBtn}
-            onPress={() => Linking.openURL(`tel:${ownerDetails.phone}`)}
-          >
-            <Ionicons name="call-outline" size={22} color={colors.primary} />
-            <Text style={styles.socialLabel}>Call</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={styles.socialIconBtn}
-            onPress={() => Linking.openURL(ownerDetails.whatsapp)}
-          >
-            <Ionicons name="logo-whatsapp" size={22} color={colors.primary} />
-            <Text style={styles.socialLabel}>WhatsApp</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={styles.socialIconBtn}
-            onPress={() => Linking.openURL(ownerDetails.instagram)}
-          >
-            <Ionicons name="logo-instagram" size={22} color={colors.primary} />
-            <Text style={styles.socialLabel}>Instagram</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={styles.socialIconBtn}
-            onPress={() => Linking.openURL(ownerDetails.facebook)}
-          >
-            <Ionicons name="logo-facebook" size={22} color={colors.primary} />
-            <Text style={styles.socialLabel}>Facebook</Text>
-          </TouchableOpacity>
-        </View>
-        <Text style={styles.aboutSubTitle}>Studio Details</Text>
-        <View style={styles.studioCard}>
-          <View style={styles.infoRow}>
-            <Ionicons
-              name="location-outline"
-              size={20}
-              color={colors.primary}
-            />
-            <Text style={styles.infoText}>{ownerDetails.location}</Text>
-          </View>
-
-          <View style={styles.infoRow}>
-            <Ionicons name="time-outline" size={20} color={colors.primary} />
-            <Text style={styles.infoText}>Mon – Sun | 9 AM – 8 PM</Text>
-          </View>
-
-          <View style={styles.infoRow}>
-            <Ionicons name="car-outline" size={20} color={colors.primary} />
-            <Text style={styles.infoText}>Parking Available</Text>
-          </View>
-          <TouchableOpacity
-            style={styles.mapPreviewCard}
-            onPress={() => Linking.openURL(ownerDetails.locationUrl)}
-          >
-            <Image source={locationImg} style={styles.mapImage} />
-
-            <View style={styles.mapOverlay}>
-              <Ionicons name="location-outline" size={18} color="white" />
-              <Text style={styles.mapOverlayText}>View on Map</Text>
-            </View>
-          </TouchableOpacity>
-          </View>
+        <StudioDetailsSection owner={ownerDetails} onOpenMap={handleOpenMap} />
       </ScrollView>
 
       {/* FULLSCREEN IMAGE */}
@@ -654,21 +827,6 @@ const styles = StyleSheet.create({
     color: colors.text,
   },
 
-  mapBtn: {
-    marginTop: 12,
-    backgroundColor: colors.primary,
-    paddingVertical: 10,
-    borderRadius: 20,
-    alignItems: "center",
-    flexDirection: "row",
-    justifyContent: "center",
-    gap: 6,
-  },
-
-  mapBtnText: {
-    color: colors.white,
-    fontWeight: "600",
-  },
   socialCard: {
     flexDirection: "row",
     justifyContent: "space-around",
@@ -692,13 +850,6 @@ const styles = StyleSheet.create({
     fontWeight: "500",
   },
 
-  socialRow: {
-    flexDirection: "row",
-    justifyContent: "space-around",
-    marginHorizontal: 16,
-    marginBottom: 12,
-    marginTop: -4,
-  },
   mapPreviewCard: {
     borderRadius: 16,
     overflow: "hidden",
@@ -729,5 +880,5 @@ const styles = StyleSheet.create({
     color: "white",
     fontSize: 12,
     fontWeight: "600",
-  }
+  },
 });

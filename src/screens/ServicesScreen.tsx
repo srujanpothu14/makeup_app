@@ -59,28 +59,33 @@ export default function ServicesScreen() {
     return data.filter(
       (item) =>
         item.title.toLowerCase().includes(q) ||
-        item.description?.toLowerCase().includes(q)
+        item.description?.toLowerCase().includes(q),
     );
   }, [data, search]);
 
-  const toggleService = (service: Service) => {
+  const selectedIds = useMemo(
+    () => new Set(selectedServices.map((s) => s.id)),
+    [selectedServices],
+  );
+
+  const toggleService = useCallback((service: Service) => {
     setSelectedServices((prev) => {
       const exists = prev.find((s) => s.id === service.id);
       return exists
         ? prev.filter((s) => s.id !== service.id)
         : [...prev, service];
     });
-  };
+  }, []);
 
-  const goToBooking = () => {
+  const goToBooking = useCallback(() => {
     navigation.navigate("Booking", {
       services: selectedServices,
     });
-  };
+  }, [navigation, selectedServices]);
 
   const renderItem = useCallback(
     ({ item }: { item: Service }) => {
-      const isSelected = selectedServices.some((s) => s.id === item.id);
+      const isSelected = selectedIds.has(item.id);
 
       return (
         <ServiceCard
@@ -91,7 +96,7 @@ export default function ServicesScreen() {
         />
       );
     },
-    [selectedServices]
+    [goToBooking, selectedIds, toggleService],
   );
 
   return (
@@ -119,6 +124,8 @@ export default function ServicesScreen() {
           renderItem={renderItem}
           showsVerticalScrollIndicator={false}
           contentContainerStyle={styles.list}
+          removeClippedSubviews
+          keyboardShouldPersistTaps="handled"
         />
       )}
 

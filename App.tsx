@@ -5,7 +5,16 @@ import { useFonts, Raleway_700Bold } from "@expo-google-fonts/raleway";
 
 import AppNavigator from "./src/app/AppNavigator";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 1000 * 60 * 5,
+      gcTime: 1000 * 60 * 30,
+      refetchOnWindowFocus: false,
+      retry: 1,
+    },
+  },
+});
 
 export default function App() {
   const [fontsLoaded] = useFonts({

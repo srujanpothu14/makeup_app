@@ -22,13 +22,13 @@ type MediaItem = {
 
 /* ---------------- CARD ---------------- */
 
-const GalleryCard = ({
+const GalleryCard = React.memo(function GalleryCard({
   item,
   onPress,
 }: {
   item: MediaItem;
   onPress: () => void;
-}) => {
+}) {
   return (
     <TouchableOpacity
       style={styles.card}
@@ -44,7 +44,7 @@ const GalleryCard = ({
       )}
     </TouchableOpacity>
   );
-};
+});
 
 /* ---------------- SCREEN ---------------- */
 
@@ -75,7 +75,7 @@ export default function GalleryScreen() {
     ({ item }: { item: MediaItem }) => (
       <GalleryCard item={item} onPress={() => setSelectedItem(item)} />
     ),
-    []
+    [],
   );
 
   return (
@@ -90,6 +90,10 @@ export default function GalleryScreen() {
         numColumns={2}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.list}
+        initialNumToRender={8}
+        maxToRenderPerBatch={8}
+        windowSize={5}
+        removeClippedSubviews
       />
 
       {/* FULLSCREEN VIEWER */}

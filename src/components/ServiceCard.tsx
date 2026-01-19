@@ -16,19 +16,19 @@ type Service = {
 
 type Props = {
   service: Service;
-  selected?: boolean;   // ✅ NEW
-  onPress: () => void;  // Toggle select / open details
-  onBook: () => void;   // Go to booking
+  selected?: boolean; // ✅ NEW
+  onPress: () => void; // Toggle select / open details
+  onBook: () => void; // Go to booking
 };
 
 /* -------------------- COMPONENT -------------------- */
 
-const ServiceCard: React.FC<Props> = ({
+const ServiceCard: React.FC<Props> = React.memo(function ServiceCard({
   service,
   selected = false,
   onPress,
   onBook,
-}) => {
+}: Props) {
   return (
     <Card
       style={[
@@ -74,7 +74,7 @@ const ServiceCard: React.FC<Props> = ({
       </View>
     </Card>
   );
-};
+});
 
 /* -------------------- STYLES -------------------- */
 

@@ -22,13 +22,13 @@ type TabIcon = {
   outline: IoniconName;
 };
 
-/* -------------------- BOOKING WRAPPER -------------------- */
-
-function BookingWrapper() {
-  // Provide a minimal route prop for local rendering
-  const mockRoute = { params: { id: "default-service-id" } } as any;
-  return <BookingScreen route={mockRoute} />;
-}
+const TAB_ICONS: Record<string, TabIcon> = {
+  Home: { filled: "home", outline: "home-outline" },
+  Services: { filled: "list", outline: "list-outline" },
+  Gallery: { filled: "images", outline: "images-outline" },
+  Booking: { filled: "calendar", outline: "calendar-outline" },
+  Profile: { filled: "person", outline: "person-outline" },
+};
 
 /* -------------------- MAIN TABS -------------------- */
 
@@ -61,17 +61,9 @@ export default function MainTabs() {
         },
 
         tabBarIcon: ({ color, size, focused }) => {
-          const icons: Record<string, TabIcon> = {
-            Home: { filled: "home", outline: "home-outline" },
-            Services: { filled: "list", outline: "list-outline" },
-            Gallery: { filled: "images", outline: "images-outline" },
-            Booking: { filled: "calendar", outline: "calendar-outline" },
-            Profile: { filled: "person", outline: "person-outline" },
-          };
-
           const iconName = focused
-            ? icons[route.name].filled
-            : icons[route.name].outline;
+            ? TAB_ICONS[route.name].filled
+            : TAB_ICONS[route.name].outline;
 
           return (
             <View style={[styles.tabButton, focused && styles.tabButtonActive]}>
@@ -110,7 +102,7 @@ export default function MainTabs() {
       />
       <Tabs.Screen
         name="Booking"
-        component={BookingWrapper}
+        component={BookingScreen}
         options={tabOptions("Booking")}
       />
       <Tabs.Screen
