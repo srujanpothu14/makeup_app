@@ -62,14 +62,21 @@ export async function fetchService(id: string): Promise<Service> {
   return s;
 }
 
-export async function createBooking(payload: Omit<Booking, 'id' | 'status'>): Promise<Booking> {
+export async function createBooking(
+  payload: Omit<Booking, "id" | "status">
+): Promise<Booking> {
   await delay(300);
   const bookings: Booking[] = await getBookings();
-  const b: Booking = { id: 'b' + (bookings.length + 1), status: 'pending', ...payload };
+  const b: Booking = {
+    id: "b" + (bookings.length + 1),
+    status: "pending",
+    ...payload,
+  };
   const next = [...bookings, b];
   await setBookings(next);
   return b;
 }
+
 
 export async function listBookings(userId: string): Promise<Booking[]> {
   await delay(200);

@@ -11,10 +11,10 @@ export type Service = {
 
 export type Booking = {
   id: string;
-  serviceId: string;
+  serviceIds: string[];   // ✅ multiple services
   userId: string;
-  startTime: string; // ISO
-  status: "pending" | "confirmed" | "cancelled";
+  startTime: string;
+  status: string;
 };
 
 export type User = {

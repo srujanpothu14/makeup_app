@@ -9,7 +9,7 @@ import { View, TextInput, StyleSheet, TouchableOpacity } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useQuery } from "@tanstack/react-query";
 import { FlashList } from "@shopify/flash-list";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useRoute } from "@react-navigation/native";
 import { fetchServices } from "../mock/api";
 import ServiceCard from "../components/ServiceCard";
 import { colors } from "../theme";
@@ -29,7 +29,14 @@ type Service = {
 
 export default function ServicesScreen() {
   const navigation = useNavigation<any>();
+  const route = useRoute<any>();
   const listRef = useRef<any>(null);
+
+  const preSelected: Service[] = route.params?.selectedServices || [];
+
+  const [selectedServices, setSelectedServices] =
+    useState<Service[]>(preSelected);
+
   useEffect(() => {
     const unsubscribe = navigation.addListener("tabPress", () => {
       listRef.current?.scrollToOffset({ offset: 0, animated: true });
@@ -56,14 +63,35 @@ export default function ServicesScreen() {
     );
   }, [data, search]);
 
+  const toggleService = (service: Service) => {
+    setSelectedServices((prev) => {
+      const exists = prev.find((s) => s.id === service.id);
+      return exists
+        ? prev.filter((s) => s.id !== service.id)
+        : [...prev, service];
+    });
+  };
+
+  const goToBooking = () => {
+    navigation.navigate("Booking", {
+      services: selectedServices,
+    });
+  };
+
   const renderItem = useCallback(
-    ({ item }: { item: Service }) => (
-      <ServiceCard
-        service={item}
-        onPress={() => navigation.push("ServiceDetail", { id: item.id })}
-      />
-    ),
-    [navigation]
+    ({ item }: { item: Service }) => {
+      const isSelected = selectedServices.some((s) => s.id === item.id);
+
+      return (
+        <ServiceCard
+          service={item}
+          selected={isSelected}
+          onPress={() => toggleService(item)}
+          onBook={goToBooking}
+        />
+      );
+    },
+    [selectedServices]
   );
 
   return (
@@ -78,14 +106,7 @@ export default function ServicesScreen() {
           value={search}
           onChangeText={setSearch}
           placeholderTextColor={colors.subdued}
-          clearButtonMode="while-editing"
         />
-
-        {!!search && (
-          <TouchableOpacity onPress={() => setSearch("")}>
-            <Ionicons name="close-circle" size={18} color={colors.subdued} />
-          </TouchableOpacity>
-        )}
       </View>
 
       {/* Services Grid */}
@@ -99,6 +120,13 @@ export default function ServicesScreen() {
           showsVerticalScrollIndicator={false}
           contentContainerStyle={styles.list}
         />
+      )}
+
+      {/* Bottom CTA */}
+      {selectedServices.length > 0 && (
+        <TouchableOpacity style={styles.cta} onPress={goToBooking}>
+          <Ionicons name="checkmark-circle" size={22} color={colors.white} />
+        </TouchableOpacity>
       )}
     </View>
   );
@@ -114,7 +142,7 @@ const styles = StyleSheet.create({
   },
 
   list: {
-    paddingBottom: 16,
+    paddingBottom: 80,
     paddingHorizontal: 8,
   },
 
@@ -123,7 +151,6 @@ const styles = StyleSheet.create({
     alignSelf: "center",
     backgroundColor: colors.backgroundSoft,
     borderRadius: 16,
-    elevation: 4,
     flexDirection: "row",
     gap: 8,
     marginBottom: 12,
@@ -131,15 +158,20 @@ const styles = StyleSheet.create({
     maxWidth: 320,
     paddingHorizontal: 12,
     paddingVertical: 10,
-    shadowColor: colors.shadow,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.15,
-    shadowRadius: 6,
   },
 
   searchInput: {
     color: colors.text,
     flex: 1,
     fontSize: 15,
+  },
+
+  cta: {
+    position: "absolute",
+    bottom: 20,
+    right: 20,
+    backgroundColor: colors.primary,
+    padding: 14,
+    borderRadius: 30,
   },
 });

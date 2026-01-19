@@ -1,38 +1,41 @@
-import React from 'react';
-import { View, Text, StyleSheet, Image, ScrollView } from 'react-native';
-import { useRoute, useNavigation, RouteProp } from '@react-navigation/native';
-import { useQuery } from '@tanstack/react-query';
-import { Button, ActivityIndicator } from 'react-native-paper';
-import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import React from "react";
+import { View, Text, StyleSheet, Image, ScrollView } from "react-native";
+import { useRoute, useNavigation, RouteProp } from "@react-navigation/native";
+import { useQuery } from "@tanstack/react-query";
+import { Button, ActivityIndicator } from "react-native-paper";
+import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 
-import { fetchService } from '../mock/api';
-import { colors } from '../theme';
+import { fetchService } from "../mock/api";
+import { colors } from "../theme";
 
 /* -------------------- TYPES -------------------- */
 
 type RootStackParamList = {
   ServiceDetail: { id: string };
-  Booking: { id: string };
+  Booking: {
+    id: string;
+    name: string;
+    price: number;
+  };
 };
 
-type ServiceDetailRouteProp = RouteProp<RootStackParamList, 'ServiceDetail'>;
+type ServiceDetailRouteProp = RouteProp<RootStackParamList, "ServiceDetail">;
+
+type NavigationProp = NativeStackNavigationProp<
+  RootStackParamList,
+  "ServiceDetail"
+>;
 
 /* -------------------- SCREEN -------------------- */
 
 export default function ServiceDetailScreen() {
   const route = useRoute<ServiceDetailRouteProp>();
-  type RootStackParamList = {
-    ServiceDetail: { id: string };
-    Booking: { id: string };
-  };
-
-  type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'ServiceDetail'>;
-
   const navigation = useNavigation<NavigationProp>();
+
   const { id } = route.params;
 
   const { data, isLoading, isError } = useQuery({
-    queryKey: ['service', id],
+    queryKey: ["service", id],
     queryFn: () => fetchService(id),
   });
 
@@ -82,7 +85,13 @@ export default function ServiceDetailScreen() {
           mode="contained"
           style={styles.button}
           contentStyle={styles.buttonContent}
-          onPress={() => navigation.navigate('Booking', { id: data.id })}
+          onPress={() =>
+            navigation.navigate("Booking", {
+              id: data.id,
+              name: data.title,
+              price: data.price,
+            })
+          }
         >
           <Text style={styles.buttonText}>Choose Time</Text>
         </Button>
@@ -103,7 +112,7 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     color: colors.white,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   card: {
     backgroundColor: colors.white,
@@ -118,13 +127,13 @@ const styles = StyleSheet.create({
   },
   category: {
     color: colors.primary,
-    fontWeight: '600',
+    fontWeight: "600",
     marginBottom: 12,
   },
   center: {
-    alignItems: 'center',
+    alignItems: "center",
     flex: 1,
-    justifyContent: 'center',
+    justifyContent: "center",
   },
   chip: {
     backgroundColor: colors.backgroundSoft,
@@ -134,7 +143,7 @@ const styles = StyleSheet.create({
   },
   chipText: {
     color: colors.subdued,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   container: {
     backgroundColor: colors.white,
@@ -149,16 +158,16 @@ const styles = StyleSheet.create({
   errorText: {
     color: colors.primary,
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   image: {
     borderBottomLeftRadius: 24,
     borderBottomRightRadius: 24,
     height: 260,
-    width: '100%',
+    width: "100%",
   },
   infoRow: {
-    flexDirection: 'row',
+    flexDirection: "row",
     gap: 12,
     marginBottom: 16,
   },
@@ -168,7 +177,7 @@ const styles = StyleSheet.create({
   },
   title: {
     color: colors.text,
-    fontFamily: 'RalewayBold',
+    fontFamily: "RalewayBold",
     fontSize: 24,
     marginBottom: 4,
   },

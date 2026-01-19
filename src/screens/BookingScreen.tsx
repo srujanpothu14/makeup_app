@@ -1,81 +1,114 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
-import { Button } from 'react-native-paper';
-import dayjs from 'dayjs';
-import { RouteProp } from '@react-navigation/native';
+import React, { useState } from "react";
+import { View, Text, StyleSheet, Alert } from "react-native";
+import { Button, Card } from "react-native-paper";
+import dayjs from "dayjs";
+import { useRoute, useNavigation } from "@react-navigation/native";
 
-import { createBooking } from '../mock/api';
-import { colors } from '../theme';
-import { useAuthStore } from '../store/useAuthStore';
+import { createBooking } from "../mock/api";
+import { colors } from "../theme";
+import { useAuthStore } from "../store/useAuthStore";
 
-/* -------------------- TYPES -------------------- */
-
-type RootStackParamList = {
-  Booking: { id: string };
-};
-
-type BookingScreenRouteProp = RouteProp<RootStackParamList, 'Booking'>;
-
-type Props = {
-  route: BookingScreenRouteProp;
-};
-
-/* -------------------- SCREEN -------------------- */
-
-export default function BookingScreen({ route }: Props) {
-  const { id: serviceId } = route.params;
+export default function BookingScreen() {
+  const route = useRoute<any>();
+  const navigation = useNavigation<any>();
   const { user } = useAuthStore();
-  const [selected, setSelected] = useState<string | null>(null);
 
-  const slots = Array.from({ length: 6 }, (_, i) =>
-    dayjs()
-      .add(i + 1, 'day')
-      .hour(11)
-      .minute(0)
-      .second(0)
-      .toISOString(),
+  const selectedServices = route.params?.services || [];
+
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const [selectedSlot, setSelectedSlot] = useState<string | null>(null);
+
+  if (!selectedServices.length) {
+    return (
+      <View style={styles.centered}>
+        <Text style={styles.title}>Select services first</Text>
+        <Button
+          mode="contained"
+          onPress={() => navigation.navigate("Services")}
+        >
+          Go to Services
+        </Button>
+      </View>
+    );
+  }
+
+  const total = selectedServices.reduce(
+    (sum: number, s: any) => sum + s.price,
+    0
   );
 
+  const slots =
+    selectedDate &&
+    Array.from({ length: 6 }, (_, i) =>
+      dayjs(selectedDate)
+        .hour(11 + i)
+        .minute(0)
+        .second(0)
+        .toISOString()
+    );
+
   const confirm = async () => {
-    if (!user || !selected) return;
-    await createBooking({ serviceId, userId: user.id, startTime: selected });
+    if (!user || !selectedSlot) return;
+
+    await createBooking({
+      serviceIds: selectedServices.map((s: any) => s.id),
+      userId: user.id,
+      startTime: selectedSlot,
+    });
+
+    Alert.alert("Success", "Booking confirmed!");
   };
-
-  if (!user) {
-    return (
-      <View style={styles.centered}>
-        <Text style={styles.warningText}>You must be logged in to make a booking.</Text>
-      </View>
-    );
-  }
-
-  if (!serviceId) {
-    return (
-      <View style={styles.centered}>
-        <Text style={styles.warningText}>
-          Service ID is missing. Please navigate to this screen properly.
-        </Text>
-      </View>
-    );
-  }
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Select a time</Text>
+      <Text style={styles.title}>Selected Services</Text>
 
-      {slots.map(iso => (
+      {selectedServices.map((s: any) => (
+        <Card key={s.id} style={styles.serviceCard}>
+          <Card.Content>
+            <Text style={styles.serviceName}>{s.title}</Text>
+            <Text style={styles.price}>₹{s.price}</Text>
+          </Card.Content>
+        </Card>
+      ))}
+
+      {/* Add more */}
+      <Button
+        mode="outlined"
+        icon="plus"
+        style={styles.addMore}
+        onPress={() =>
+          navigation.navigate("Services", {
+            selectedServices,
+          })
+        }
+      >
+        Add more
+      </Button>
+
+      <Text style={styles.total}>Total: ₹{total}</Text>
+
+      {/* Time slots */}
+      <Text style={styles.title}>Select Time</Text>
+
+      {slots?.map((iso) => (
         <Button
           key={iso}
-          mode={selected === iso ? 'contained' : 'outlined'}
-          style={styles.slotButton}
-          onPress={() => setSelected(iso)}
+          mode={selectedSlot === iso ? "contained" : "outlined"}
+          style={styles.slot}
+          onPress={() => setSelectedSlot(iso)}
         >
-          <Text style={styles.slotText}>{dayjs(iso).format('ddd, D MMM • h:mm A')}</Text>
+          {dayjs(iso).format("h:mm A")}
         </Button>
       ))}
 
-      <Button mode="contained" disabled={!selected} onPress={confirm} style={styles.confirmButton}>
-        <Text style={styles.confirmText}>Confirm Booking</Text>
+      <Button
+        mode="contained"
+        style={styles.confirm}
+        disabled={!selectedSlot}
+        onPress={confirm}
+      >
+        Confirm Booking
       </Button>
     </View>
   );
@@ -84,38 +117,59 @@ export default function BookingScreen({ route }: Props) {
 /* -------------------- STYLES -------------------- */
 
 const styles = StyleSheet.create({
-  centered: {
-    alignItems: 'center',
-    flex: 1,
-    justifyContent: 'center',
-  },
-  confirmButton: {
-    backgroundColor: colors.primary,
-    marginTop: 12,
-  },
-  confirmText: {
-    color: colors.white,
-    fontWeight: '600',
-  },
   container: {
     flex: 1,
     padding: 16,
+    backgroundColor: colors.backgroundSoft,
   },
-  slotButton: {
-    marginBottom: 8,
+
+  centered: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
   },
-  slotText: {
-    color: colors.text,
-  },
+
   title: {
     fontSize: 18,
-    fontWeight: '600',
+    fontWeight: "700",
+    color: colors.text,
     marginBottom: 12,
   },
 
-  warningText: {
+  serviceCard: {
+    marginBottom: 10,
+    borderRadius: 14,
+  },
+
+  serviceName: {
+    fontWeight: "600",
+    color: colors.text,
+  },
+
+  price: {
     color: colors.primary,
+    fontWeight: "700",
+  },
+
+  addMore: {
+    marginVertical: 12,
+    borderColor: colors.primary,
+  },
+
+  total: {
     fontSize: 16,
-    textAlign: 'center',
+    fontWeight: "700",
+    color: colors.primary,
+    marginBottom: 16,
+  },
+
+  slot: {
+    marginBottom: 8,
+    borderColor: colors.primary,
+  },
+
+  confirm: {
+    backgroundColor: colors.primary,
+    marginTop: 16,
   },
 });
