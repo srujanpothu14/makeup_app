@@ -69,6 +69,8 @@ export default function BookingScreen() {
         <Text style={styles.title}>Select services first</Text>
         <Button
           mode="contained"
+          buttonColor={colors.primary}
+          textColor={colors.white}
           onPress={() => navigation.navigate("Services")}
         >
           Go to Services
