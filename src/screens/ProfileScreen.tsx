@@ -1,15 +1,28 @@
 import React from "react";
-import { View, StyleSheet, ScrollView } from "react-native";
+import { View, StyleSheet, ScrollView, ActivityIndicator } from "react-native";
 import { Card, Text, Button, Avatar, Divider, Chip } from "react-native-paper";
+import { useQuery } from "@tanstack/react-query";
+import dayjs from "dayjs";
 
 import InfoRow from "../components/InfoRow";
 import { useAuthStore } from "../store/useAuthStore";
-import { useBookingStore } from "../store/useBookingStore";
+import { listBookings } from "../mock/api";
 import { colors, radii, shadows, spacing } from "../theme";
 
 export default function ProfileScreen() {
   const { user, signOut } = useAuthStore();
-  const selectedServices = useBookingStore((s) => s.selectedServices);
+
+  const {
+    data: bookings = [],
+    isLoading,
+    isFetching,
+    error,
+    refetch,
+  } = useQuery({
+    queryKey: ["bookings", user?.id],
+    queryFn: () => listBookings(user!.id),
+    enabled: !!user?.id,
+  });
 
   const initials =
     user?.name
@@ -21,6 +34,12 @@ export default function ProfileScreen() {
   const userId = user?.id ?? "—";
   const name = user?.name ?? "Guest";
   const mobile = user?.mobile_number ?? "—";
+
+  const sortedBookings = [...bookings].sort((a, b) => {
+    const bt = dayjs((b as any)?.startTime ?? 0).valueOf();
+    const at = dayjs((a as any)?.startTime ?? 0).valueOf();
+    return bt - at;
+  });
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
@@ -62,29 +81,83 @@ export default function ProfileScreen() {
         </View>
       </Card>
 
-      {/* Current Selection */}
+      {/* Booking History */}
       <Card style={styles.card}>
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Current Selection</Text>
+          <View style={styles.sectionHeaderRow}>
+            <Text style={styles.sectionTitle}>Booking History</Text>
+            <Button
+              mode="text"
+              compact
+              onPress={() => refetch()}
+              loading={isFetching}
+              textColor={colors.primary}
+            >
+              Refresh
+            </Button>
+          </View>
           <Divider />
 
           <View style={styles.rowsWrap}>
-            <InfoRow
-              icon="sparkles-outline"
-              text={`Selected services: ${selectedServices.length}`}
-            />
-            {selectedServices.slice(0, 4).map((s) => (
-              <InfoRow
-                key={s.id}
-                icon="checkmark-circle-outline"
-                text={s.title}
-              />
-            ))}
-            {selectedServices.length > 4 ? (
-              <Text style={styles.moreText}>
-                +{selectedServices.length - 4} more
+            {!user?.id ? (
+              <Text style={styles.emptyText}>Sign in to see bookings.</Text>
+            ) : isLoading ? (
+              <View style={styles.loadingRow}>
+                <ActivityIndicator />
+                <Text style={styles.loadingText}>Loading bookings…</Text>
+              </View>
+            ) : error ? (
+              <Text style={styles.errorText}>
+                {error instanceof Error ? error.message : "Failed to load"}
               </Text>
-            ) : null}
+            ) : sortedBookings.length === 0 ? (
+              <Text style={styles.emptyText}>No bookings yet.</Text>
+            ) : (
+              sortedBookings.map((b, index) => {
+                const status = (b.status || "pending").toLowerCase();
+                const serviceIds = Array.isArray((b as any)?.serviceIds)
+                  ? (b as any).serviceIds
+                  : [];
+                const serviceCount = serviceIds.length;
+                const bookingTime = (b as any)?.startTime
+                  ? dayjs((b as any).startTime).format("DD MMM YYYY, h:mm A")
+                  : "—";
+                const statusChipStyle =
+                  status === "confirmed"
+                    ? styles.statusChipConfirmed
+                    : status === "cancelled"
+                      ? styles.statusChipCancelled
+                      : styles.statusChipPending;
+                const statusTextStyle =
+                  status === "confirmed"
+                    ? styles.statusTextConfirmed
+                    : status === "cancelled"
+                      ? styles.statusTextCancelled
+                      : styles.statusTextPending;
+
+                return (
+                  <View
+                    key={(b as any)?.id ?? `booking-${index}`}
+                    style={styles.bookingRow}
+                  >
+                    <View style={styles.bookingLeft}>
+                      <Text style={styles.bookingTitle}>{bookingTime}</Text>
+                      <Text style={styles.bookingSub}>
+                        {serviceCount} service{serviceCount === 1 ? "" : "s"} •
+                        ID: {(b as any)?.id ?? "—"}
+                      </Text>
+                    </View>
+                    <Chip
+                      compact
+                      style={statusChipStyle}
+                      textStyle={statusTextStyle}
+                    >
+                      {status}
+                    </Chip>
+                  </View>
+                );
+              })
+            )}
           </View>
         </View>
       </Card>
@@ -167,13 +240,70 @@ const styles = StyleSheet.create({
     fontWeight: "800",
     marginBottom: spacing.sm,
   },
+  sectionHeaderRow: {
+    alignItems: "center",
+    flexDirection: "row",
+    justifyContent: "space-between",
+  },
   rowsWrap: {
     marginTop: spacing.md,
   },
-  moreText: {
+  loadingRow: {
+    alignItems: "center",
+    flexDirection: "row",
+    gap: spacing.sm,
+    paddingVertical: spacing.sm,
+  },
+  loadingText: {
     color: colors.muted,
+  },
+  emptyText: {
+    color: colors.muted,
+    paddingVertical: spacing.sm,
+  },
+  errorText: {
+    color: colors.primary,
+    paddingVertical: spacing.sm,
+  },
+  bookingRow: {
+    alignItems: "center",
+    backgroundColor: colors.backgroundSoft,
+    borderRadius: radii.medium,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    marginBottom: spacing.sm,
+  },
+  bookingLeft: {
+    flex: 1,
+    marginRight: spacing.sm,
+  },
+  bookingTitle: {
+    color: colors.text,
+    fontWeight: "800",
+  },
+  bookingSub: {
+    color: colors.subdued,
     marginTop: spacing.xs,
-    marginLeft: 30,
+  },
+  statusChipPending: {
+    backgroundColor: colors.primaryLight,
+  },
+  statusTextPending: {
+    color: colors.primary,
+  },
+  statusChipConfirmed: {
+    backgroundColor: colors.primary,
+  },
+  statusTextConfirmed: {
+    color: colors.white,
+  },
+  statusChipCancelled: {
+    backgroundColor: colors.mutedLight,
+  },
+  statusTextCancelled: {
+    color: colors.subdued,
   },
   logOut: {
     borderRadius: radii.large,
