@@ -11,7 +11,7 @@ import {
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 
-import { colors } from "../theme";
+import { colors, shadows } from "../theme";
 import { fetchpreviousWorkMedia } from "../mock/api";
 
 type MediaItem = {
@@ -148,7 +148,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     overflow: "hidden",
     backgroundColor: colors.placeholder,
-    elevation: 3,
+    ...shadows.card,
   },
 
   media: {

@@ -1,10 +1,11 @@
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import { useRoute, useNavigation, RouteProp } from '@react-navigation/native';
-import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import React from "react";
+import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
+import { useRoute, useNavigation, RouteProp } from "@react-navigation/native";
+import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 
-import { offers, seedServices } from '../mock/data';
-import { colors } from '../theme';
+import { offers, seedServices } from "../mock/data";
+import { colors, shadows } from "../theme";
+import { useBookingStore } from "../store/useBookingStore";
 
 /* -------------------- TYPES -------------------- */
 
@@ -14,7 +15,7 @@ type RootStackParamList = {
   Booking: undefined;
 };
 
-type OfferDetailsRouteProp = RouteProp<RootStackParamList, 'OfferDetails'>;
+type OfferDetailsRouteProp = RouteProp<RootStackParamList, "OfferDetails">;
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
 /* -------------------- SCREEN -------------------- */
@@ -22,10 +23,11 @@ type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 export default function OfferDetailsScreen() {
   const route = useRoute<OfferDetailsRouteProp>();
   const navigation = useNavigation<NavigationProp>();
+  const addService = useBookingStore((state) => state.addService);
 
   const { id } = route.params;
 
-  const offer = offers.find(o => o.id === id);
+  const offer = offers.find((o) => o.id === id);
 
   if (!offer) {
     return (
@@ -35,7 +37,7 @@ export default function OfferDetailsScreen() {
     );
   }
 
-  const service = seedServices.find(s => s.id === offer.serviceId);
+  const service = seedServices.find((s) => s.id === offer.serviceId);
 
   return (
     <View style={styles.container}>
@@ -55,14 +57,20 @@ export default function OfferDetailsScreen() {
 
           <TouchableOpacity
             style={styles.serviceBtn}
-            onPress={() => navigation.push('ServiceDetail', { id: service.id })}
+            onPress={() => navigation.push("ServiceDetail", { id: service.id })}
           >
             <Text style={styles.serviceBtnText}>View Service</Text>
           </TouchableOpacity>
         </View>
       )}
 
-      <TouchableOpacity style={styles.bookBtn} onPress={() => navigation.navigate('Booking')}>
+      <TouchableOpacity
+        style={styles.bookBtn}
+        onPress={() => {
+          if (service) addService(service);
+          navigation.navigate("Booking");
+        }}
+      >
         <Text style={styles.bookBtnText}>Book with Offer</Text>
       </TouchableOpacity>
     </View>
@@ -80,10 +88,10 @@ const styles = StyleSheet.create({
   },
   badgeText: {
     color: colors.white,
-    fontWeight: '700',
+    fontWeight: "700",
   },
   bookBtn: {
-    alignItems: 'center',
+    alignItems: "center",
     backgroundColor: colors.primary,
     borderRadius: 12,
     marginTop: 20,
@@ -91,7 +99,7 @@ const styles = StyleSheet.create({
   },
   bookBtnText: {
     color: colors.white,
-    fontWeight: '700',
+    fontWeight: "700",
   },
   container: {
     backgroundColor: colors.backgroundSoft,
@@ -105,13 +113,13 @@ const styles = StyleSheet.create({
   },
 
   header: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    alignItems: "center",
+    flexDirection: "row",
+    justifyContent: "space-between",
     marginBottom: 12,
   },
   serviceBtn: {
-    alignItems: 'center',
+    alignItems: "center",
     backgroundColor: colors.primary,
     borderRadius: 10,
     marginTop: 12,
@@ -119,28 +127,25 @@ const styles = StyleSheet.create({
   },
   serviceBtnText: {
     color: colors.white,
-    fontWeight: '700',
+    fontWeight: "700",
   },
   serviceCard: {
     backgroundColor: colors.white,
     borderRadius: 12,
-    elevation: 3,
     padding: 12,
-    shadowColor: colors.shadow,
-    shadowOpacity: 0.08,
-    shadowRadius: 6,
+    ...shadows.card,
   },
   servicePrice: {
     color: colors.primary,
-    fontWeight: '700',
+    fontWeight: "700",
     marginTop: 6,
   },
   serviceTitle: {
-    fontFamily: 'RalewayBold',
+    fontFamily: "RalewayBold",
     fontSize: 16,
   },
   title: {
-    fontFamily: 'RalewayBold',
+    fontFamily: "RalewayBold",
     fontSize: 22,
   },
 });

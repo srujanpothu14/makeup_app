@@ -6,7 +6,8 @@ import { Button, ActivityIndicator } from "react-native-paper";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 
 import { fetchService } from "../mock/api";
-import { colors } from "../theme";
+import { colors, shadows } from "../theme";
+import { useBookingStore } from "../store/useBookingStore";
 
 /* -------------------- TYPES -------------------- */
 
@@ -31,6 +32,7 @@ type NavigationProp = NativeStackNavigationProp<
 export default function ServiceDetailScreen() {
   const route = useRoute<ServiceDetailRouteProp>();
   const navigation = useNavigation<NavigationProp>();
+  const addService = useBookingStore((state) => state.addService);
 
   const { id } = route.params;
 
@@ -85,13 +87,10 @@ export default function ServiceDetailScreen() {
           mode="contained"
           style={styles.button}
           contentStyle={styles.buttonContent}
-          onPress={() =>
-            navigation.navigate("Booking", {
-              id: data.id,
-              name: data.title,
-              price: data.price,
-            })
-          }
+          onPress={() => {
+            addService(data);
+            navigation.navigate("Booking");
+          }}
         >
           <Text style={styles.buttonText}>Choose Time</Text>
         </Button>
@@ -117,13 +116,10 @@ const styles = StyleSheet.create({
   card: {
     backgroundColor: colors.white,
     borderRadius: 20,
-    elevation: 4,
     marginHorizontal: 16,
     marginTop: -30,
     padding: 20,
-    shadowColor: colors.shadow,
-    shadowOpacity: 0.1,
-    shadowRadius: 6,
+    ...shadows.card,
   },
   category: {
     color: colors.primary,

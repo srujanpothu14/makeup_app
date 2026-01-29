@@ -10,7 +10,7 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 
-import { colors } from "../theme";
+import { colors, shadows } from "../theme";
 
 /* -------------------- TYPES -------------------- */
 
@@ -45,14 +45,10 @@ const styles = StyleSheet.create({
   card: {
     backgroundColor: colors.white,
     borderRadius: 16,
-    elevation: 4,
     marginBottom: 20,
     marginHorizontal: 16,
     overflow: "hidden",
-    shadowColor: colors.shadow,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 6,
+    ...shadows.card,
   },
 
   image: {

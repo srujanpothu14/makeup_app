@@ -2,6 +2,7 @@ import React from "react";
 import { View, ActivityIndicator, StatusBar } from "react-native";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useFonts, Raleway_700Bold } from "@expo-google-fonts/raleway";
+import { Provider as PaperProvider } from "react-native-paper";
 
 import AppNavigator from "./src/app/AppNavigator";
 
@@ -38,8 +39,10 @@ export default function App() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <StatusBar hidden={false} barStyle="dark-content" />
-      <AppNavigator />
+      <PaperProvider>
+        <StatusBar hidden={false} barStyle="dark-content" />
+        <AppNavigator />
+      </PaperProvider>
     </QueryClientProvider>
   );
 }

@@ -4,7 +4,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 
-import { colors } from "../theme";
+import { colors, shadows } from "../theme";
 import ServicesScreen from "../screens/ServicesScreen";
 import GalleryScreen from "../screens/GalleryScreen";
 import BookingScreen from "../screens/BookingScreen";
@@ -53,10 +53,7 @@ export default function MainTabs() {
           paddingTop: 6,
           paddingBottom: insets.bottom + 2,
           borderTopWidth: 0,
-          shadowColor: colors.shadow,
-          shadowOpacity: 0.06,
-          shadowRadius: 6,
-          elevation: 6,
+          ...shadows.card,
           zIndex: 10,
         },
 

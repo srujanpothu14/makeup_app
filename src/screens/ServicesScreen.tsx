@@ -19,33 +19,21 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useQuery } from "@tanstack/react-query";
 import { FlashList } from "@shopify/flash-list";
-import { useNavigation, useRoute } from "@react-navigation/native";
+import { useNavigation } from "@react-navigation/native";
 import { fetchServices } from "../mock/api";
 import ServiceCard from "../components/ServiceCard";
-import { colors } from "../theme";
-
-/* -------------------- TYPES -------------------- */
-
-type Service = {
-  id: string;
-  title: string;
-  description?: string;
-  category: string;
-  durationMin: number;
-  price: number;
-};
+import { colors, shadows } from "../theme";
+import type { Service } from "../types";
+import { useBookingStore } from "../store/useBookingStore";
 
 /* -------------------- SCREEN -------------------- */
 
 export default function ServicesScreen() {
   const navigation = useNavigation<any>();
-  const route = useRoute<any>();
   const listRef = useRef<any>(null);
 
-  const preSelected: Service[] = route.params?.selectedServices || [];
-
-  const [selectedServices, setSelectedServices] =
-    useState<Service[]>(preSelected);
+  const selectedServices = useBookingStore((state) => state.selectedServices);
+  const toggleService = useBookingStore((state) => state.toggleService);
   const [cartOpen, setCartOpen] = useState(false);
 
   useEffect(() => {
@@ -78,15 +66,6 @@ export default function ServicesScreen() {
     () => new Set(selectedServices.map((s) => s.id)),
     [selectedServices],
   );
-
-  const toggleService = useCallback((service: Service) => {
-    setSelectedServices((prev) => {
-      const exists = prev.find((s) => s.id === service.id);
-      return exists
-        ? prev.filter((s) => s.id !== service.id)
-        : [...prev, service];
-    });
-  }, []);
 
   const goToBooking = useCallback(() => {
     navigation.navigate("Booking", {
@@ -209,7 +188,13 @@ export default function ServicesScreen() {
 
             <View style={styles.modalFooter}>
               <Text style={styles.modalTotal}>Total: ₹{total}</Text>
-              <TouchableOpacity style={styles.modalCta} onPress={goToBooking}>
+              <TouchableOpacity
+                style={styles.modalCta}
+                onPress={() => {
+                  setCartOpen(false);
+                  goToBooking();
+                }}
+              >
                 <Text style={styles.modalCtaText}>Proceed</Text>
               </TouchableOpacity>
             </View>
@@ -264,11 +249,7 @@ const styles = StyleSheet.create({
     borderRadius: 28,
     alignItems: "center",
     justifyContent: "center",
-    shadowColor: colors.shadow,
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 4 },
-    elevation: 8,
+    ...shadows.floating,
     borderColor: colors.accent,
     borderWidth: 2,
   },
@@ -311,11 +292,7 @@ const styles = StyleSheet.create({
     maxHeight: "70%",
     paddingBottom: 8,
     paddingTop: 6,
-    shadowColor: colors.shadow,
-    shadowOpacity: 0.12,
-    shadowRadius: 10,
-    shadowOffset: { width: 0, height: -2 },
-    elevation: 10,
+    ...shadows.sheet,
   },
 
   modalHandle: {

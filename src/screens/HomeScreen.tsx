@@ -33,7 +33,7 @@ import {
   whyChooseItems,
 } from "../mock/data";
 import { fetchpreviousWorkMedia, fetchFeedbacks } from "../mock/api";
-import { colors } from "../theme";
+import { colors, shadows } from "../theme";
 import logo from "../assets/manasa_logo.png";
 import locationImg from "../assets/location.png";
 
@@ -746,7 +746,7 @@ const styles = StyleSheet.create({
     margin: 16,
     padding: 16,
     alignItems: "center",
-    elevation: 2,
+    ...shadows.card,
   },
 
   artistImage: {
@@ -782,7 +782,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     margin: 16,
     padding: 16,
-    elevation: 2,
+    ...shadows.card,
   },
 
   infoRow: {
@@ -804,7 +804,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 16,
     marginBottom: 12,
     paddingVertical: 14,
-    elevation: 2,
+    ...shadows.card,
   },
 
   socialIconBtn: {
