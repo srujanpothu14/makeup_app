@@ -132,9 +132,20 @@ export default function BookingScreen() {
           </View>
 
           <Button
-            mode="outlined"
+            mode={selectedDate ? "contained" : "outlined"}
             style={styles.customDateBtn}
-            icon="calendar"
+            icon={({ size, color }) => (
+              <Ionicons
+                name={selectedDate ? "checkmark-circle" : "calendar-outline"}
+                size={size}
+                color={color}
+              />
+            )}
+            buttonColor={selectedDate ? colors.primary : undefined}
+            textColor={selectedDate ? colors.white : colors.primary}
+            contentStyle={
+              selectedDate ? styles.dateButtonContentSelected : undefined
+            }
             onPress={() => setShowDatePicker(true)}
           >
             {selectedDate
@@ -163,6 +174,7 @@ export default function BookingScreen() {
                       [dayjs(selectedDate).format("YYYY-MM-DD")]: {
                         selected: true,
                         selectedColor: colors.primary,
+                        selectedTextColor: colors.white,
                       },
                     }
                   : {}
@@ -182,6 +194,7 @@ export default function BookingScreen() {
             <Button
               mode="contained"
               style={styles.datePickerDone}
+              textColor="#fff"
               onPress={() => setShowDatePicker(false)}
             >
               Done
@@ -203,6 +216,20 @@ export default function BookingScreen() {
                     key={iso}
                     mode={isActive ? "contained" : "outlined"}
                     style={[styles.slot, isActive && styles.slotActive]}
+                    icon={
+                      isActive
+                        ? ({ size, color }) => (
+                            <Ionicons
+                              name="checkmark-circle"
+                              size={size}
+                              color={color}
+                            />
+                          )
+                        : undefined
+                    }
+                    contentStyle={
+                      isActive ? styles.timeButtonContentSelected : undefined
+                    }
                     onPress={() => setSelectedSlot(iso)}
                     labelStyle={[
                       styles.slotText,
@@ -231,6 +258,7 @@ export default function BookingScreen() {
               mode="contained"
               style={styles.confirm}
               disabled={!selectedSlot}
+              textColor={colors.white}
               onPress={confirm}
             >
               Confirm Booking
@@ -350,6 +378,10 @@ const styles = StyleSheet.create({
     borderRadius: 14,
   },
 
+  dateButtonContentSelected: {
+    flexDirection: "row-reverse",
+  },
+
   timeHint: {
     color: colors.subdued,
     fontSize: 13,
@@ -382,20 +414,27 @@ const styles = StyleSheet.create({
 
   slotActive: {
     backgroundColor: colors.primary,
+    borderColor: colors.primary,
   },
 
   slotText: {
     fontSize: 13,
     fontWeight: "600",
+    color: colors.primary,
   },
 
   slotTextActive: {
-    color: colors.text,
+    color: colors.white,
+  },
+
+  timeButtonContentSelected: {
+    flexDirection: "row-reverse",
   },
 
   confirm: {
     backgroundColor: colors.primary,
     borderRadius: 16,
+    color: colors.white,
   },
 
   summaryCard: {
