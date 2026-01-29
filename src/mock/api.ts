@@ -1,6 +1,6 @@
-import { Booking, Service, User, Media, Feedback } from '../types';
+import { Booking, Service, User, Media, Feedback } from "../types";
 
-import { seedUsers, seedServices, mockMedia, feedbacks } from './data';
+import { seedUsers, seedServices, mockMedia, feedbacks } from "./data";
 import {
   getBookings,
   setBookings,
@@ -10,22 +10,66 @@ import {
   getUser,
   setUser,
   clearUser,
-} from './storage';
+  getUsers,
+  setUsers,
+} from "./storage";
 
 // Simulate network latency
-const delay = (ms = 400) => new Promise(res => setTimeout(res, ms));
+const delay = (ms = 400) => new Promise((res) => setTimeout(res, ms));
+
+async function listAllUsers(): Promise<User[]> {
+  const storedUsers: User[] = await getUsers();
+  const merged = [...seedUsers, ...storedUsers];
+  const byMobile = new Map<string, User>();
+  for (const u of merged) byMobile.set(u.mobile_number, u);
+  return Array.from(byMobile.values());
+}
 
 export async function login(
   mobile_number: string,
   password: string,
 ): Promise<{ token: string; user: User }> {
   await delay();
-  const user = seedUsers.find(u => u.mobile_number === mobile_number);
-  if (!user || password !== 'password') throw new Error('Invalid credentials');
-  const token = 'mock-token-' + Date.now();
+  const users = await listAllUsers();
+  const user = users.find((u) => u.mobile_number === mobile_number);
+  if (!user || user.password !== password)
+    throw new Error("Invalid credentials");
+  const token = "mock-token-" + Date.now();
   await setToken(token);
   await setUser(user);
   return { token, user };
+}
+
+export async function register(
+  name: string,
+  mobile_number: string,
+  pin: string,
+): Promise<{ token: string; user: User }> {
+  await delay();
+
+  if (!/^\d{10}$/.test(mobile_number)) throw new Error("Invalid mobile number");
+  if (!/^\d{4}$/.test(pin)) throw new Error("PIN must be 4 digits");
+
+  const users = await listAllUsers();
+  if (users.some((u) => u.mobile_number === mobile_number)) {
+    throw new Error("Mobile number already registered");
+  }
+
+  const newUser: User = {
+    id: "u" + Date.now(),
+    name,
+    mobile_number,
+    password: pin,
+  };
+
+  const storedUsers: User[] = await getUsers();
+  await setUsers([...storedUsers, newUser]);
+
+  const token = "mock-token-" + Date.now();
+  await setToken(token);
+  await setUser(newUser);
+
+  return { token, user: newUser };
 }
 
 export async function me(): Promise<User | null> {
@@ -57,13 +101,13 @@ export async function fetchFeedbacks(): Promise<Feedback[]> {
 }
 export async function fetchService(id: string): Promise<Service> {
   await delay(200);
-  const s = seedServices.find(x => x.id === id);
-  if (!s) throw new Error('Service not found');
+  const s = seedServices.find((x) => x.id === id);
+  if (!s) throw new Error("Service not found");
   return s;
 }
 
 export async function createBooking(
-  payload: Omit<Booking, "id" | "status">
+  payload: Omit<Booking, "id" | "status">,
 ): Promise<Booking> {
   await delay(300);
   const bookings: Booking[] = await getBookings();
@@ -77,9 +121,8 @@ export async function createBooking(
   return b;
 }
 
-
 export async function listBookings(userId: string): Promise<Booking[]> {
   await delay(200);
   const bookings: Booking[] = await getBookings();
-  return bookings.filter(b => b.userId === userId);
+  return bookings.filter((b) => b.userId === userId);
 }

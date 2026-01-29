@@ -5,7 +5,7 @@ export const seedUsers: User[] = [
     id: "u1",
     name: "Srujan Pothu",
     mobile_number: "7997037993",
-    password: "123456",
+    password: "1234",
   },
 ];
 

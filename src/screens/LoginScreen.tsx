@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect } from "react";
 import {
   View,
   Text,
@@ -10,17 +10,17 @@ import {
   StatusBar,
   StyleSheet,
   Animated,
-} from 'react-native';
-import { useForm } from 'react-hook-form';
-import { z } from 'zod';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { TextInput, Button } from 'react-native-paper';
-import { useNavigation } from '@react-navigation/native';
-import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+} from "react-native";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { TextInput, Button } from "react-native-paper";
+import { useNavigation } from "@react-navigation/native";
+import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 
-import { useAuthStore } from '../store/useAuthStore';
-import login_cover_photo from '../assets/login_cover_photo.jpg';
-import { colors } from '../theme';
+import { useAuthStore } from "../store/useAuthStore";
+import login_cover_photo from "../assets/login_cover_photo.jpg";
+import { colors, radii } from "../theme";
 
 /* -------------------- TYPES -------------------- */
 
@@ -29,11 +29,11 @@ type RootStackParamList = {
   Register: undefined;
 };
 
-type NavigationProps = NativeStackNavigationProp<RootStackParamList, 'Login'>;
+type NavigationProps = NativeStackNavigationProp<RootStackParamList, "Login">;
 
 const schema = z.object({
-  mobile: z.string().regex(/^\d{10}$/, 'Invalid mobile number'),
-  password: z.string().min(6, 'Min 6 chars'),
+  mobile: z.string().regex(/^\d{10}$/, "Invalid mobile number"),
+  password: z.string().regex(/^\d{4}$/, "Enter 4-digit PIN"),
 });
 
 type FormValues = z.infer<typeof schema>;
@@ -42,6 +42,7 @@ type FormValues = z.infer<typeof schema>;
 
 function LoginScreen() {
   const [inputFocused, setInputFocused] = useState(false);
+  const [authError, setAuthError] = useState<string | null>(null);
 
   const imageWidth = useRef(new Animated.Value(200)).current;
   const imageHeight = useRef(new Animated.Value(300)).current;
@@ -56,7 +57,7 @@ function LoginScreen() {
     formState: { errors, isSubmitting },
   } = useForm<FormValues>({
     resolver: zodResolver(schema),
-    defaultValues: { mobile: '', password: 'password' },
+    defaultValues: { mobile: "", password: "" },
   });
 
   useEffect(() => {
@@ -80,8 +81,15 @@ function LoginScreen() {
   }, [inputFocused, imageWidth, imageHeight, imageRadius]);
 
   const onSubmit = async (values: FormValues) => {
-    await signIn(values.mobile, values.password);
+    setAuthError(null);
+    try {
+      await signIn(values.mobile, values.password);
+    } catch (error) {
+      setAuthError(error instanceof Error ? error.message : "Login failed");
+    }
   };
+
+  const digitsOnly = (text: string) => text.replace(/\D/g, "");
 
   return (
     <View style={styles.container}>
@@ -90,7 +98,7 @@ function LoginScreen() {
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <KeyboardAvoidingView
           style={styles.flex}
-          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
         >
           <ScrollView
             contentContainerStyle={styles.scrollContent}
@@ -121,25 +129,59 @@ function LoginScreen() {
                 label="Mobile Number"
                 mode="outlined"
                 keyboardType="phone-pad"
-                onChangeText={t => setValue('mobile', t)}
+                maxLength={10}
+                style={styles.input}
+                outlineColor={colors.mutedLight}
+                activeOutlineColor={colors.primary}
+                textColor={colors.text}
+                placeholderTextColor={colors.muted}
+                selectionColor={colors.primary}
+                cursorColor={colors.primary}
+                outlineStyle={{ borderRadius: radii.medium }}
+                left={<TextInput.Icon icon="phone" color={colors.muted} />}
+                onChangeText={(t) =>
+                  setValue("mobile", digitsOnly(t), { shouldValidate: true })
+                }
                 error={!!errors.mobile}
                 onFocus={() => setInputFocused(true)}
                 onBlur={() => setInputFocused(false)}
               />
-              {errors.mobile && <Text style={styles.errorText}>{errors.mobile.message}</Text>}
+              {errors.mobile && (
+                <Text style={styles.errorText}>{errors.mobile.message}</Text>
+              )}
 
               {/* PASSWORD */}
               <TextInput
-                label="Password"
+                label="4-digit PIN"
                 mode="outlined"
                 secureTextEntry
                 style={styles.passwordInput}
-                onChangeText={t => setValue('password', t)}
+                keyboardType="number-pad"
+                maxLength={4}
+                outlineColor={colors.mutedLight}
+                activeOutlineColor={colors.primary}
+                textColor={colors.text}
+                placeholderTextColor={colors.muted}
+                selectionColor={colors.primary}
+                cursorColor={colors.primary}
+                outlineStyle={{ borderRadius: radii.medium }}
+                left={<TextInput.Icon icon="lock" color={colors.muted} />}
+                onChangeText={(t) =>
+                  setValue("password", digitsOnly(t).slice(0, 4), {
+                    shouldValidate: true,
+                  })
+                }
                 error={!!errors.password}
                 onFocus={() => setInputFocused(true)}
                 onBlur={() => setInputFocused(false)}
               />
-              {errors.password && <Text style={styles.errorText}>{errors.password.message}</Text>}
+              {errors.password && (
+                <Text style={styles.errorText}>{errors.password.message}</Text>
+              )}
+
+              {authError ? (
+                <Text style={styles.errorText}>{authError}</Text>
+              ) : null}
 
               {/* LOGIN BUTTON */}
               <Button
@@ -155,7 +197,10 @@ function LoginScreen() {
               </Button>
 
               {/* REGISTER LINK */}
-              <Text style={styles.registerText} onPress={() => navigation.navigate('Register')}>
+              <Text
+                style={styles.registerText}
+                onPress={() => navigation.navigate("Register")}
+              >
                 Not a member? Register now
               </Text>
             </View>
@@ -193,23 +238,27 @@ const styles = StyleSheet.create({
   },
   loginText: {
     color: colors.white,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   logo: {
-    resizeMode: 'cover',
+    resizeMode: "cover",
   },
   logoWrap: {
-    alignItems: 'center',
+    alignItems: "center",
     marginBottom: 8,
     marginTop: 80,
   },
+  input: {
+    backgroundColor: colors.backgroundSoft,
+  },
   passwordInput: {
     marginTop: 12,
+    backgroundColor: colors.backgroundSoft,
   },
   registerText: {
     color: colors.primary,
     marginTop: 16,
-    textAlign: 'center',
+    textAlign: "center",
   },
   scrollContent: {
     flexGrow: 1,
@@ -217,8 +266,8 @@ const styles = StyleSheet.create({
 
   title: {
     fontSize: 24,
-    fontWeight: '600',
+    fontWeight: "600",
     marginBottom: 16,
-    textAlign: 'center',
+    textAlign: "center",
   },
 });

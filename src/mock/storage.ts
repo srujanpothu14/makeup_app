@@ -1,9 +1,10 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const KEY = {
-  TOKEN: 'token',
-  USER: 'user',
-  BOOKINGS: 'bookings',
+  TOKEN: "token",
+  USER: "user",
+  BOOKINGS: "bookings",
+  USERS: "users",
 } as const;
 
 export async function getToken() {
@@ -33,4 +34,13 @@ export async function getBookings() {
 }
 export async function setBookings(bookings: any[]) {
   return AsyncStorage.setItem(KEY.BOOKINGS, JSON.stringify(bookings));
+}
+
+export async function getUsers() {
+  const raw = await AsyncStorage.getItem(KEY.USERS);
+  return raw ? JSON.parse(raw) : [];
+}
+
+export async function setUsers(users: any[]) {
+  return AsyncStorage.setItem(KEY.USERS, JSON.stringify(users));
 }
