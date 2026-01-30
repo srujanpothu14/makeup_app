@@ -1,14 +1,35 @@
 import { create } from "zustand";
 
-import { login, logout, me, register } from "../mock/api";
+import {
+  login,
+  logout,
+  me,
+  registerWithOtp,
+  requestOtp,
+  verifyOtp,
+} from "../mock/api";
 import { User } from "../types";
+import { getToken } from "../mock/storage";
 
 type AuthState = {
   user: User | null;
   token: string | null;
   hydrate: () => Promise<void>;
   signIn: (mobileNumber: string, password: string) => Promise<void>;
-  signUp: (name: string, mobileNumber: string, pin: string) => Promise<void>;
+  requestOtp: (
+    mobileNumber: string,
+  ) => Promise<{ expiresIn?: number; message?: string }>;
+  verifyOtp: (
+    mobileNumber: string,
+    otp: string,
+  ) => Promise<{ verified: boolean; otpToken?: string; message?: string }>;
+  signUp: (
+    name: string,
+    mobileNumber: string,
+    pin: string,
+    otp: string,
+    otpToken?: string,
+  ) => Promise<void>;
   signOut: () => Promise<void>;
 };
 
@@ -17,7 +38,8 @@ export const useAuthStore = create<AuthState>((set) => ({
   token: null,
   hydrate: async () => {
     const user = await me();
-    if (user) set({ user, token: "mock" });
+    const token = await getToken();
+    if (user && token) set({ user, token });
   },
   signIn: async (mobileNumber, password) => {
     try {
@@ -31,9 +53,21 @@ export const useAuthStore = create<AuthState>((set) => ({
       throw error; // Re-throw the error to handle it in the UI
     }
   },
-  signUp: async (name, mobileNumber, pin) => {
+  requestOtp: async (mobileNumber) => {
+    return requestOtp(mobileNumber);
+  },
+  verifyOtp: async (mobileNumber, otp) => {
+    return verifyOtp(mobileNumber, otp);
+  },
+  signUp: async (name, mobileNumber, pin, otp, otpToken) => {
     try {
-      const { token, user } = await register(name, mobileNumber, pin);
+      const { token, user } = await registerWithOtp(
+        name,
+        mobileNumber,
+        pin,
+        otp,
+        otpToken,
+      );
       set({ token, user });
     } catch (error) {
       console.error(

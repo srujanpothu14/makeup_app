@@ -20,6 +20,20 @@ const USE_REMOTE_API =
   !!process.env.EXPO_PUBLIC_API_URL &&
   process.env.EXPO_PUBLIC_API_URL !== "http://localhost:5000";
 
+type OtpSendResult = {
+  otpToken?: string;
+  expiresIn?: number;
+  message?: string;
+};
+
+type OtpVerifyResult = {
+  verified: boolean;
+  otpToken?: string;
+  message?: string;
+};
+
+const mockOtpByMobile = new Map<string, { code: string; expiresAt: number }>();
+
 // Simulate network latency
 const delay = (ms = 400) => new Promise((res) => setTimeout(res, ms));
 
@@ -103,6 +117,128 @@ export async function register(
         mobile_number,
         pin,
         password: pin,
+      },
+    },
+  );
+
+  await setToken(result.token);
+  await setUser(result.user);
+  return result;
+}
+
+export async function requestOtp(
+  mobile_number: string,
+): Promise<OtpSendResult> {
+  if (!USE_REMOTE_API) {
+    await delay(250);
+    const code = "123456";
+    mockOtpByMobile.set(mobile_number, {
+      code,
+      expiresAt: Date.now() + 2 * 60 * 1000,
+    });
+    return {
+      expiresIn: 120,
+      message: "OTP sent (mock)",
+    };
+  }
+
+  return requestFirstOk<OtpSendResult>(
+    [
+      "/auth/send-otp",
+      "/api/auth/send-otp",
+      "/auth/otp/send",
+      "/api/auth/otp/send",
+      "/otp/send",
+      "/api/otp/send",
+    ],
+    { method: "POST", body: { mobile_number } },
+  );
+}
+
+export async function verifyOtp(
+  mobile_number: string,
+  otp: string,
+): Promise<OtpVerifyResult> {
+  if (!USE_REMOTE_API) {
+    await delay(250);
+    const entry = mockOtpByMobile.get(mobile_number);
+    if (!entry || Date.now() > entry.expiresAt) {
+      return { verified: false, message: "OTP expired" };
+    }
+    if (entry.code !== otp) {
+      return { verified: false, message: "Invalid OTP" };
+    }
+    return { verified: true, message: "OTP verified (mock)" };
+  }
+
+  const res = await requestFirstOk<any>(
+    [
+      "/auth/verify-otp",
+      "/api/auth/verify-otp",
+      "/auth/otp/verify",
+      "/api/auth/otp/verify",
+      "/otp/verify",
+      "/api/otp/verify",
+    ],
+    {
+      method: "POST",
+      body: {
+        mobile_number,
+        otp,
+        code: otp,
+      },
+    },
+  );
+
+  const verified =
+    res?.verified === true ||
+    res?.success === true ||
+    res?.status === "verified" ||
+    res?.data?.verified === true;
+
+  const otpToken =
+    res?.otpToken ?? res?.otp_token ?? res?.token ?? res?.data?.otpToken;
+
+  return {
+    verified: !!verified,
+    otpToken: typeof otpToken === "string" ? otpToken : undefined,
+    message: res?.message,
+  };
+}
+
+export async function registerWithOtp(
+  name: string,
+  mobile_number: string,
+  pin: string,
+  otp: string,
+  otpToken?: string,
+): Promise<{ token: string; user: User }> {
+  if (!USE_REMOTE_API) {
+    const verify = await verifyOtp(mobile_number, otp);
+    if (!verify.verified)
+      throw new Error(verify.message ?? "OTP verification failed");
+    return register(name, mobile_number, pin);
+  }
+
+  const result = await requestFirstOk<{ token: string; user: User }>(
+    [
+      "/auth/register",
+      "/api/auth/register",
+      "/auth/register-otp",
+      "/api/auth/register-otp",
+      "/register",
+      "/api/register",
+    ],
+    {
+      method: "POST",
+      body: {
+        name,
+        mobile_number,
+        pin,
+        password: pin,
+        otp,
+        otpToken,
+        otp_token: otpToken,
       },
     },
   );
