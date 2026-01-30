@@ -11,7 +11,7 @@ export type Service = {
 
 export type Booking = {
   id: string;
-  serviceIds: string[];   // ✅ multiple services
+  serviceIds: string[]; // ✅ multiple services
   userId: string;
   startTime: string;
   status: string;
@@ -19,15 +19,18 @@ export type Booking = {
 
 export type User = {
   id: string;
-  name: string;
-  mobile_number: string;
+  fullName?: string;
+  name?: string;
+  mobileNumber?: string;
+  mobile_number?: string;
   password?: string;
   avatarUrl?: string;
+  dateRegistered?: string;
 };
 
 export type Media = {
   id: string;
-  type: 'image' | 'video';
+  type: "image" | "video";
   url: string;
 };
 export type Feedback = {

@@ -142,6 +142,11 @@ export async function requestOtp(
     };
   }
 
+  // Format phone number with +91 prefix if not already present
+  const phone = mobile_number.startsWith("+")
+    ? mobile_number
+    : `+91${mobile_number}`;
+
   return requestFirstOk<OtpSendResult>(
     [
       "/auth/send-otp",
@@ -151,7 +156,7 @@ export async function requestOtp(
       "/otp/send",
       "/api/otp/send",
     ],
-    { method: "POST", body: { mobile_number } },
+    { method: "POST", body: { phone } },
   );
 }
 
@@ -168,8 +173,17 @@ export async function verifyOtp(
     if (entry.code !== otp) {
       return { verified: false, message: "Invalid OTP" };
     }
-    return { verified: true, message: "OTP verified (mock)" };
+    return {
+      verified: true,
+      message: "OTP verified (mock)",
+      otpToken: "mock-otp-token",
+    };
   }
+
+  // Format phone number with +91 prefix if not already present
+  const phone = mobile_number.startsWith("+")
+    ? mobile_number
+    : `+91${mobile_number}`;
 
   const res = await requestFirstOk<any>(
     [
@@ -183,21 +197,15 @@ export async function verifyOtp(
     {
       method: "POST",
       body: {
-        mobile_number,
-        otp,
+        phone,
         code: otp,
       },
     },
   );
 
-  const verified =
-    res?.verified === true ||
-    res?.success === true ||
-    res?.status === "verified" ||
-    res?.data?.verified === true;
+  const verified = res?.verified === true;
 
-  const otpToken =
-    res?.otpToken ?? res?.otp_token ?? res?.token ?? res?.data?.otpToken;
+  const otpToken = res?.otpToken ?? res?.otp_token ?? res?.token;
 
   return {
     verified: !!verified,
@@ -221,24 +229,13 @@ export async function registerWithOtp(
   }
 
   const result = await requestFirstOk<{ token: string; user: User }>(
-    [
-      "/auth/register",
-      "/api/auth/register",
-      "/auth/register-otp",
-      "/api/auth/register-otp",
-      "/register",
-      "/api/register",
-    ],
+    ["/auth/register"],
     {
       method: "POST",
       body: {
-        name,
-        mobile_number,
+        fullName: name,
         pin,
-        password: pin,
-        otp,
         otpToken,
-        otp_token: otpToken,
       },
     },
   );
