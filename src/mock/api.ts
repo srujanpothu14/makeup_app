@@ -1,6 +1,8 @@
-import { Booking, Service, User, Media, Feedback } from "../types";
+import type { Booking, Service, User, Media, Feedback } from "../types";
 
 import { seedUsers, seedServices, mockMedia, feedbacks } from "./data";
+import { ApiError, requestFirstOk, requestJson } from "../api/client";
+export { API_BASE_URL } from "../api/config";
 import {
   getBookings,
   setBookings,
@@ -13,6 +15,10 @@ import {
   getUsers,
   setUsers,
 } from "./storage";
+
+const USE_REMOTE_API =
+  !!process.env.EXPO_PUBLIC_API_URL &&
+  process.env.EXPO_PUBLIC_API_URL !== "http://localhost:5000";
 
 // Simulate network latency
 const delay = (ms = 400) => new Promise((res) => setTimeout(res, ms));
@@ -29,15 +35,29 @@ export async function login(
   mobile_number: string,
   password: string,
 ): Promise<{ token: string; user: User }> {
-  await delay();
-  const users = await listAllUsers();
-  const user = users.find((u) => u.mobile_number === mobile_number);
-  if (!user || user.password !== password)
-    throw new Error("Invalid credentials");
-  const token = "mock-token-" + Date.now();
-  await setToken(token);
-  await setUser(user);
-  return { token, user };
+  if (!USE_REMOTE_API) {
+    await delay();
+    const users = await listAllUsers();
+    const user = users.find((u) => u.mobile_number === mobile_number);
+    if (!user || user.password !== password)
+      throw new Error("Invalid credentials");
+    const token = "mock-token-" + Date.now();
+    await setToken(token);
+    await setUser(user);
+    return { token, user };
+  }
+
+  const result = await requestFirstOk<{ token: string; user: User }>(
+    ["/auth/login", "/api/auth/login", "/login", "/api/login"],
+    {
+      method: "POST",
+      body: { mobile_number, password },
+    },
+  );
+
+  await setToken(result.token);
+  await setUser(result.user);
+  return result;
 }
 
 export async function register(
@@ -45,84 +65,201 @@ export async function register(
   mobile_number: string,
   pin: string,
 ): Promise<{ token: string; user: User }> {
-  await delay();
+  if (!USE_REMOTE_API) {
+    await delay();
 
-  if (!/^\d{10}$/.test(mobile_number)) throw new Error("Invalid mobile number");
-  if (!/^\d{4}$/.test(pin)) throw new Error("PIN must be 4 digits");
+    if (!/^\d{10}$/.test(mobile_number))
+      throw new Error("Invalid mobile number");
+    if (!/^\d{4}$/.test(pin)) throw new Error("PIN must be 4 digits");
 
-  const users = await listAllUsers();
-  if (users.some((u) => u.mobile_number === mobile_number)) {
-    throw new Error("Mobile number already registered");
+    const users = await listAllUsers();
+    if (users.some((u) => u.mobile_number === mobile_number)) {
+      throw new Error("Mobile number already registered");
+    }
+
+    const newUser: User = {
+      id: "u" + Date.now(),
+      name,
+      mobile_number,
+      password: pin,
+    };
+
+    const storedUsers: User[] = await getUsers();
+    await setUsers([...storedUsers, newUser]);
+
+    const token = "mock-token-" + Date.now();
+    await setToken(token);
+    await setUser(newUser);
+
+    return { token, user: newUser };
   }
 
-  const newUser: User = {
-    id: "u" + Date.now(),
-    name,
-    mobile_number,
-    password: pin,
-  };
+  const result = await requestFirstOk<{ token: string; user: User }>(
+    ["/auth/register", "/api/auth/register", "/register", "/api/register"],
+    {
+      method: "POST",
+      body: {
+        name,
+        mobile_number,
+        pin,
+        password: pin,
+      },
+    },
+  );
 
-  const storedUsers: User[] = await getUsers();
-  await setUsers([...storedUsers, newUser]);
-
-  const token = "mock-token-" + Date.now();
-  await setToken(token);
-  await setUser(newUser);
-
-  return { token, user: newUser };
+  await setToken(result.token);
+  await setUser(result.user);
+  return result;
 }
 
 export async function me(): Promise<User | null> {
-  await delay(200);
+  if (!USE_REMOTE_API) {
+    await delay(200);
+    const token = await getToken();
+    if (!token) return null;
+    return getUser();
+  }
+
   const token = await getToken();
   if (!token) return null;
-  return getUser();
+
+  try {
+    const user = await requestFirstOk<User>(
+      ["/auth/me", "/api/auth/me", "/me", "/api/me"],
+      { method: "GET", auth: true },
+    );
+    await setUser(user);
+    return user;
+  } catch (err) {
+    if (err instanceof ApiError && (err.status === 401 || err.status === 403)) {
+      await clearToken();
+      await clearUser();
+      return null;
+    }
+    throw err;
+  }
 }
 
 export async function logout(): Promise<void> {
-  await delay(100);
-  await clearToken();
-  await clearUser();
+  if (!USE_REMOTE_API) {
+    await delay(100);
+    await clearToken();
+    await clearUser();
+    return;
+  }
+
+  try {
+    await requestFirstOk<unknown>(
+      ["/auth/logout", "/api/auth/logout", "/logout", "/api/logout"],
+      { method: "POST", auth: true },
+    );
+  } catch {
+    // ignore
+  } finally {
+    await clearToken();
+    await clearUser();
+  }
 }
 
 export async function fetchServices(): Promise<Service[]> {
-  await delay(200);
-  return seedServices;
+  if (!USE_REMOTE_API) {
+    await delay(200);
+    return seedServices;
+  }
+
+  return requestFirstOk<Service[]>(["/services", "/api/services"], {
+    method: "GET",
+  });
 }
 
 export async function fetchpreviousWorkMedia(): Promise<Media[]> {
-  await delay(200);
-  return mockMedia;
+  if (!USE_REMOTE_API) {
+    await delay(200);
+    return mockMedia;
+  }
+
+  return requestFirstOk<Media[]>(
+    [
+      "/media/previous-work",
+      "/api/media/previous-work",
+      "/gallery",
+      "/api/gallery",
+      "/media",
+      "/api/media",
+    ],
+    { method: "GET" },
+  );
 }
 
 export async function fetchFeedbacks(): Promise<Feedback[]> {
-  await delay(200);
-  return feedbacks;
+  if (!USE_REMOTE_API) {
+    await delay(200);
+    return feedbacks;
+  }
+
+  return requestFirstOk<Feedback[]>(
+    [
+      "/feedbacks",
+      "/api/feedbacks",
+      "/reviews",
+      "/api/reviews",
+      "/testimonials",
+      "/api/testimonials",
+    ],
+    { method: "GET" },
+  );
 }
 export async function fetchService(id: string): Promise<Service> {
-  await delay(200);
-  const s = seedServices.find((x) => x.id === id);
-  if (!s) throw new Error("Service not found");
-  return s;
+  if (!USE_REMOTE_API) {
+    await delay(200);
+    const s = seedServices.find((x) => x.id === id);
+    if (!s) throw new Error("Service not found");
+    return s;
+  }
+
+  return requestFirstOk<Service>([`/services/${id}`, `/api/services/${id}`], {
+    method: "GET",
+  });
 }
 
 export async function createBooking(
   payload: Omit<Booking, "id" | "status">,
 ): Promise<Booking> {
-  await delay(300);
-  const bookings: Booking[] = await getBookings();
-  const b: Booking = {
-    id: "b" + (bookings.length + 1),
-    status: "pending",
-    ...payload,
-  };
-  const next = [...bookings, b];
-  await setBookings(next);
-  return b;
+  if (!USE_REMOTE_API) {
+    await delay(300);
+    const bookings: Booking[] = await getBookings();
+    const b: Booking = {
+      id: "b" + (bookings.length + 1),
+      status: "pending",
+      ...payload,
+    };
+    const next = [...bookings, b];
+    await setBookings(next);
+    return b;
+  }
+
+  const booking = await requestFirstOk<Booking>(
+    ["/bookings", "/api/bookings"],
+    { method: "POST", body: payload, auth: true },
+  );
+  return booking;
 }
 
 export async function listBookings(userId: string): Promise<Booking[]> {
-  await delay(200);
-  const bookings: Booking[] = await getBookings();
-  return bookings.filter((b) => b.userId === userId);
+  if (!USE_REMOTE_API) {
+    await delay(200);
+    const bookings: Booking[] = await getBookings();
+    return bookings.filter((b) => b.userId === userId);
+  }
+
+  const encoded = encodeURIComponent(userId);
+  return requestFirstOk<Booking[]>(
+    [
+      `/bookings?userId=${encoded}`,
+      `/api/bookings?userId=${encoded}`,
+      `/users/${encoded}/bookings`,
+      `/api/users/${encoded}/bookings`,
+    ],
+    { method: "GET", auth: true },
+  );
 }
