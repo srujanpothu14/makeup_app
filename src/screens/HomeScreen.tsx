@@ -32,7 +32,11 @@ import {
   ownerDetails,
   whyChooseItems,
 } from "../mock/data";
-import { fetchpreviousWorkMedia, fetchFeedbacks } from "../mock/api";
+import {
+  fetchpreviousWorkMedia,
+  fetchFeedbacks,
+  fetchServices,
+} from "../mock/api";
 import { colors, shadows } from "../theme";
 import logo from "../assets/manasa_logo.png";
 import locationImg from "../assets/location.png";
@@ -445,11 +449,7 @@ export default function HomeScreen() {
   const [galleryPreview, setGalleryPreview] = useState<MediaItem[]>([]);
   const [feedbacks, setFeedbacks] = useState<Feedback[]>([]);
   const [selectedItem, setSelectedItem] = useState<MediaItem | null>(null);
-
-  const featuredServices = useMemo<Service[]>(
-    () => seedServices.filter((s) => ["s1", "s2", "s3", "s4"].includes(s.id)),
-    [],
-  );
+  const [featuredServices, setFeaturedServices] = useState<Service[]>([]);
 
   const memoOffers = useMemo<Offer[]>(() => offers, []);
 
@@ -459,10 +459,12 @@ export default function HomeScreen() {
 
   useEffect(() => {
     const loadData = async () => {
-      const [galleryResult, reviewsResult] = await Promise.allSettled([
-        fetchpreviousWorkMedia(),
-        fetchFeedbacks(),
-      ]);
+      const [galleryResult, reviewsResult, servicesResult] =
+        await Promise.allSettled([
+          fetchpreviousWorkMedia(),
+          fetchFeedbacks(),
+          fetchServices(),
+        ]);
 
       if (galleryResult.status === "fulfilled") {
         setGalleryPreview(galleryResult.value.slice(0, 6));
@@ -470,6 +472,10 @@ export default function HomeScreen() {
 
       if (reviewsResult.status === "fulfilled") {
         setFeedbacks(reviewsResult.value);
+      }
+
+      if (servicesResult.status === "fulfilled") {
+        setFeaturedServices(servicesResult.value.slice(0, 4));
       }
     };
     loadData();

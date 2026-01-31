@@ -1,7 +1,7 @@
 import type { Booking, Service, User, Media, Feedback } from "../types";
 
 import { seedUsers, seedServices, mockMedia, feedbacks } from "./data";
-import { ApiError, requestFirstOk, requestJson } from "../api/client";
+import { ApiError, requestFirstOk } from "../api/client";
 export { API_BASE_URL } from "../api/config";
 import {
   getBookings,
@@ -313,9 +313,33 @@ export async function fetchServices(): Promise<Service[]> {
     return seedServices;
   }
 
-  return requestFirstOk<Service[]>(["/services", "/api/services"], {
+  const res = await requestFirstOk<any>(["/services", "/api/services"], {
     method: "GET",
   });
+
+  const items = Array.isArray(res) ? res : (res?.services ?? []);
+
+  return items
+    .map((item: any) => {
+      const title = item?.serviceName ?? item?.title;
+      const imageUrl = item?.imageUrl ?? item?.image_url ?? item?.thumbnail_url;
+      const price = parseFloat(item?.price) || 0;
+      const duration = parseFloat(item?.duration) || 0;
+
+      if (!title) return null;
+
+      return {
+        id: String(item?.id ?? ""),
+        title,
+        category: item?.category ?? "Other",
+        durationMin: duration,
+        price,
+        thumbnailUrl: imageUrl,
+        description: item?.description,
+        artistId: item?.artistId || item?.artist_id,
+      } as Service;
+    })
+    .filter(Boolean) as Service[];
 }
 
 export async function fetchpreviousWorkMedia(): Promise<Media[]> {
@@ -386,9 +410,28 @@ export async function fetchService(id: string): Promise<Service> {
     return s;
   }
 
-  return requestFirstOk<Service>([`/services/${id}`, `/api/services/${id}`], {
-    method: "GET",
-  });
+  const res = await requestFirstOk<any>(
+    [`/services/${id}`, `/api/services/${id}`],
+    { method: "GET" },
+  );
+
+  const item = res?.service || res;
+
+  const title = item?.serviceName ?? item?.title;
+  const imageUrl = item?.imageUrl ?? item?.image_url ?? item?.thumbnail_url;
+  const price = parseFloat(item?.price) || 0;
+  const duration = parseFloat(item?.duration) || 0;
+
+  return {
+    id: String(item?.id ?? ""),
+    title,
+    category: item?.category ?? "Other",
+    durationMin: duration,
+    price,
+    thumbnailUrl: imageUrl,
+    description: item?.description,
+    artistId: item?.artistId || item?.artist_id,
+  } as Service;
 }
 
 export async function createBooking(
