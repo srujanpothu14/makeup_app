@@ -61,17 +61,30 @@ export async function login(
     return { token, user };
   }
 
+  const phone = mobile_number.startsWith("+")
+    ? mobile_number
+    : `+91${mobile_number}`;
+
   const result = await requestFirstOk<{ token: string; user: User }>(
     ["/auth/login", "/api/auth/login", "/login", "/api/login"],
     {
       method: "POST",
-      body: { mobile_number, password },
+      body: { phone, pin: password },
     },
   );
 
+  // Normalize the API response to match our User type
+  const normalizedUser: User = {
+    id: result.user.id,
+    fullName: result.user.fullName || result.user.name,
+    name: result.user.fullName || result.user.name,
+    mobileNumber: result.user.mobileNumber || result.user.mobile_number,
+    mobile_number: result.user.mobileNumber || result.user.mobile_number,
+  };
+
   await setToken(result.token);
-  await setUser(result.user);
-  return result;
+  await setUser(normalizedUser);
+  return { token: result.token, user: normalizedUser };
 }
 
 export async function register(
