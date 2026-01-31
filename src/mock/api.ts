@@ -134,9 +134,18 @@ export async function register(
     },
   );
 
+  // Normalize the API response to match our User type
+  const normalizedUser: User = {
+    id: result.user.id,
+    fullName: result.user.fullName || result.user.name,
+    name: result.user.fullName || result.user.name,
+    mobileNumber: result.user.mobileNumber || result.user.mobile_number,
+    mobile_number: result.user.mobileNumber || result.user.mobile_number,
+  };
+
   await setToken(result.token);
-  await setUser(result.user);
-  return result;
+  await setUser(normalizedUser);
+  return { token: result.token, user: normalizedUser };
 }
 
 export async function requestOtp(
@@ -253,9 +262,18 @@ export async function registerWithOtp(
     },
   );
 
+  // Normalize the API response to match our User type
+  const normalizedUser: User = {
+    id: result.user.id,
+    fullName: result.user.fullName || result.user.name,
+    name: result.user.fullName || result.user.name,
+    mobileNumber: result.user.mobileNumber || result.user.mobile_number,
+    mobile_number: result.user.mobileNumber || result.user.mobile_number,
+  };
+
   await setToken(result.token);
-  await setUser(result.user);
-  return result;
+  await setUser(normalizedUser);
+  return { token: result.token, user: normalizedUser };
 }
 
 export async function me(): Promise<User | null> {
@@ -270,12 +288,22 @@ export async function me(): Promise<User | null> {
   if (!token) return null;
 
   try {
-    const user = await requestFirstOk<User>(
+    const user = await requestFirstOk<any>(
       ["/auth/me", "/api/auth/me", "/me", "/api/me"],
       { method: "GET", auth: true },
     );
-    await setUser(user);
-    return user;
+
+    // Normalize the API response to match our User type
+    const normalizedUser: User = {
+      id: user.id,
+      fullName: user.fullName || user.name,
+      name: user.fullName || user.name,
+      mobileNumber: user.mobileNumber || user.mobile_number,
+      mobile_number: user.mobileNumber || user.mobile_number,
+    };
+
+    await setUser(normalizedUser);
+    return normalizedUser;
   } catch (err) {
     if (err instanceof ApiError && (err.status === 401 || err.status === 403)) {
       await clearToken();
