@@ -324,8 +324,10 @@ export async function fetchpreviousWorkMedia(): Promise<Media[]> {
     return mockMedia;
   }
 
-  return requestFirstOk<Media[]>(
+  const res = await requestFirstOk<any>(
     [
+      "/gallery/media",
+      "/api/gallery/media",
       "/media/previous-work",
       "/api/media/previous-work",
       "/gallery",
@@ -335,6 +337,27 @@ export async function fetchpreviousWorkMedia(): Promise<Media[]> {
     ],
     { method: "GET" },
   );
+
+  const items = Array.isArray(res) ? res : (res?.media ?? []);
+
+  return items
+    .map((item: any) => {
+      const url =
+        item?.mediaUrl ?? item?.media_url ?? item?.mediaURL ?? item?.url;
+      const rawType = String(
+        item?.isImageOrVideo ?? item?.type ?? "image",
+      ).toLowerCase();
+      const type = rawType === "video" ? "video" : "image";
+
+      if (!url || typeof url !== "string") return null;
+
+      return {
+        id: String(item?.id ?? url),
+        url,
+        type,
+      } as Media;
+    })
+    .filter(Boolean) as Media[];
 }
 
 export async function fetchFeedbacks(): Promise<Feedback[]> {

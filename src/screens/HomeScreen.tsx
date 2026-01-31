@@ -459,12 +459,18 @@ export default function HomeScreen() {
 
   useEffect(() => {
     const loadData = async () => {
-      const [gallery, reviews] = await Promise.all([
+      const [galleryResult, reviewsResult] = await Promise.allSettled([
         fetchpreviousWorkMedia(),
         fetchFeedbacks(),
       ]);
-      setGalleryPreview(gallery.slice(0, 6));
-      setFeedbacks(reviews);
+
+      if (galleryResult.status === "fulfilled") {
+        setGalleryPreview(galleryResult.value.slice(0, 6));
+      }
+
+      if (reviewsResult.status === "fulfilled") {
+        setFeedbacks(reviewsResult.value);
+      }
     };
     loadData();
   }, []);
