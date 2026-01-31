@@ -35,11 +35,13 @@ export default function ProfileScreen() {
   const name = user?.name ?? "Guest";
   const mobile = user?.mobile_number ?? "—";
 
-  const sortedBookings = [...bookings].sort((a, b) => {
-    const bt = dayjs((b as any)?.startTime ?? 0).valueOf();
-    const at = dayjs((a as any)?.startTime ?? 0).valueOf();
-    return bt - at;
-  });
+  const sortedBookings = Array.isArray(bookings)
+    ? [...bookings].sort((a, b) => {
+        const bt = dayjs((b as any)?.startTime ?? 0).valueOf();
+        const at = dayjs((a as any)?.startTime ?? 0).valueOf();
+        return bt - at;
+      })
+    : [];
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>

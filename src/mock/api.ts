@@ -390,17 +390,34 @@ export async function fetchFeedbacks(): Promise<Feedback[]> {
     return feedbacks;
   }
 
-  return requestFirstOk<Feedback[]>(
+  const res = await requestFirstOk<any>(
     [
-      "/feedbacks",
-      "/api/feedbacks",
       "/reviews",
       "/api/reviews",
+      "/feedbacks",
+      "/api/feedbacks",
       "/testimonials",
       "/api/testimonials",
     ],
     { method: "GET" },
   );
+
+  const items = Array.isArray(res) ? res : (res?.reviews ?? []);
+
+  return items
+    .map((item: any) => {
+      const name = item?.customerName ?? item?.name;
+      const text = item?.review ?? item?.text;
+
+      if (!name || !text) return null;
+
+      return {
+        id: String(item?.id ?? ""),
+        name,
+        text,
+      } as Feedback;
+    })
+    .filter(Boolean) as Feedback[];
 }
 export async function fetchService(id: string): Promise<Service> {
   if (!USE_REMOTE_API) {
@@ -450,11 +467,44 @@ export async function createBooking(
     return b;
   }
 
-  const booking = await requestFirstOk<Booking>(
-    ["/bookings", "/api/bookings"],
-    { method: "POST", body: payload, auth: true },
-  );
-  return booking;
+  // Extract user data and booking details from payload
+  const customerName = (payload as any)?.customerName || "";
+  const customerPhone = (payload as any)?.customerPhone || "";
+  const userId = payload.userId;
+
+  // Extract date and time from startTime ISO string
+  const startDate = new Date(payload.startTime);
+  const bookingDate = startDate.toISOString().split("T")[0]; // YYYY-MM-DD
+  const hours = String(startDate.getHours()).padStart(2, "0");
+  const minutes = String(startDate.getMinutes()).padStart(2, "0");
+  const bookingTime = `${hours}:${minutes}`; // HH:MM format
+
+  // Map booking data to API request format
+  const apiPayload = {
+    customerName,
+    customerPhone,
+    customerId: userId,
+    services: payload.serviceIds.map((id) => String(id)),
+    bookingDate,
+    bookingTime,
+  };
+
+  const booking = await requestFirstOk<any>(["/bookings", "/api/bookings"], {
+    method: "POST",
+    body: apiPayload,
+    auth: true,
+  });
+
+  // Map API response back to Booking type
+  return {
+    id: String(booking?.id ?? ""),
+    serviceIds: Array.isArray(booking?.services)
+      ? booking.services.map((s: any) => String(s))
+      : payload.serviceIds,
+    userId: booking?.customerId || userId || "",
+    startTime: payload.startTime,
+    status: booking?.status || "pending",
+  } as Booking;
 }
 
 export async function listBookings(userId: string): Promise<Booking[]> {
@@ -464,14 +514,60 @@ export async function listBookings(userId: string): Promise<Booking[]> {
     return bookings.filter((b) => b.userId === userId);
   }
 
-  const encoded = encodeURIComponent(userId);
-  return requestFirstOk<Booking[]>(
-    [
-      `/bookings?userId=${encoded}`,
-      `/api/bookings?userId=${encoded}`,
-      `/users/${encoded}/bookings`,
-      `/api/users/${encoded}/bookings`,
-    ],
-    { method: "GET", auth: true },
-  );
+  try {
+    const encoded = encodeURIComponent(userId);
+    const res = await requestFirstOk<any>(
+      [
+        `/bookings/customer/${encoded}`,
+        `/api/bookings/customer/${encoded}`,
+        `/bookings?userId=${encoded}`,
+        `/api/bookings?userId=${encoded}`,
+        `/users/${encoded}/bookings`,
+        `/api/users/${encoded}/bookings`,
+      ],
+      { method: "GET", auth: true },
+    );
+
+    // Handle both direct array and wrapped response - ensure items is always an array
+    let items: any[] = [];
+    if (Array.isArray(res)) {
+      items = res;
+    } else if (res?.bookings && Array.isArray(res.bookings)) {
+      items = res.bookings;
+    } else if (res && typeof res === "object") {
+      items = [];
+    }
+
+    return items
+      .map((item: any) => {
+        if (!item || typeof item !== "object") return null;
+
+        const bookingDate = item?.bookingDate;
+        const bookingTime = item?.bookingTime;
+
+        // Parse booking date and time
+        let startTime = item?.startTime;
+        if (!startTime && bookingDate) {
+          const dateStr = new Date(bookingDate).toISOString().split("T")[0];
+          const timeStr = bookingTime
+            ? new Date(bookingTime).toISOString().split("T")[1]?.split(".")[0]
+            : "00:00:00";
+          startTime = `${dateStr}T${timeStr || "00:00:00"}.000Z`;
+        }
+
+        return {
+          id: String(item?.id ?? ""),
+          serviceIds: Array.isArray(item?.services)
+            ? item.services.map((s: any) => String(s))
+            : [],
+          userId: item?.customerId || "",
+          startTime: startTime || new Date().toISOString(),
+          status: item?.status || "pending",
+        } as Booking;
+      })
+      .filter((b) => b !== null && b?.id);
+  } catch (err) {
+    console.error("Error fetching bookings:", err);
+    return [];
+  }
 }

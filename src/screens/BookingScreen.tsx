@@ -44,14 +44,24 @@ export default function BookingScreen() {
   const confirm = useCallback(async () => {
     if (!user || !selectedSlot) return;
 
-    await createBooking({
-      serviceIds: selectedServices.map((s: any) => s.id),
-      userId: user.id,
-      startTime: selectedSlot,
-    });
+    try {
+      await createBooking({
+        serviceIds: selectedServices.map((s: any) => s.id),
+        userId: user.id,
+        startTime: selectedSlot,
+        customerName: user.fullName || user.name || "",
+        customerPhone: user.mobileNumber || user.mobile_number || "",
+      } as any);
 
-    Alert.alert("Success", "Booking confirmed!");
-  }, [selectedServices, selectedSlot, user]);
+      Alert.alert("Success", "Booking confirmed!");
+      navigation.goBack();
+    } catch (error) {
+      Alert.alert(
+        "Error",
+        error instanceof Error ? error.message : "Failed to create booking",
+      );
+    }
+  }, [selectedServices, selectedSlot, user, navigation]);
 
   const handleAddMore = useCallback(
     () => navigation.navigate("Services"),
